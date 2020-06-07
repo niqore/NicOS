@@ -42,6 +42,30 @@ mov al, ' '
 int 0x10
 mov al, '!'
 int 0x10
+mov al, ' '
+int 0x10
+
+; Lecture du secret
+; On ajoute l'offset 0x7c00 (début de l'adresse du boot sector) et l'adresse du secret dans le fichier
+; On utilise bx comme registre intermédiaire car il est impossible d'avoir un registre en destination et source d'une commande
+; Note: en assembleur, [] donne la valeur dans le registre
+mov bx, secret_data ; On met l'adresse de secret_data dans bx
+add bx, 0x7c00 ; On ajoute 0x7c00 (adresse du boot sector)
+mov al, [bx] ; On met [0x7c00 + secret_data] dans al (on a donc la valeur de secret_data)
+int 0x10
+
+mov bx, other_secret
+add bx, 0x7c00
+mov al, [bx]
+int 0x10
+
+; Un secret auquel on peut accéder dans la mémoire
+secret_data:
+    db "A"
+    
+; Un autre secret
+other_secret:
+    db "B"
 
 ; Boucle infinie
 loop:
