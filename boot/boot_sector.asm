@@ -25,9 +25,9 @@ call print_hex
 ; Boucle infinie
 jmp $
 
-%include "boot_sector_print.asm"
-%include "boot_sector_print_hex.asm"
-%include "boot_sector_disk.asm"
+%include "boot/boot_sector_print.asm"
+%include "boot/boot_sector_print_hex.asm"
+%include "boot/boot_sector_disk.asm"
 
 WELCOME:
 	db 'Bienvenue sur NicOS !', 0; Le 0 sert à terminer la chaine de caractère
