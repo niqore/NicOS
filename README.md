@@ -48,3 +48,6 @@ L'adresse peut changer mais ne dépasse jamais 0xA0000 et 128KiB en taille.
 0xC0000000 à 0xFFFFFFFF: Mémoire pour les devices (1 GiB)
 0x100000000 et +: RAM (PAE/64bit), utilisation libre
 
+## Notions de base
+
+Jusqu'au commit "Stack usage" inclus, ce sont les notions de base. Ensuite le code est changé drasticallement.
