@@ -5,6 +5,11 @@ call print
 call print_nl
 call print_nl
 
+mov bx, SECTOR_READ
+call print
+mov bx, ONE
+call print
+call print_nl
 
 mov bp, 0x8000 ; Définition de la pile
 mov sp, bp
@@ -16,6 +21,12 @@ call disk_load
 mov dx, [0x9000] ; Premier mot du premier secteur
 call print_hex
 
+call print_nl
+call print_nl
+mov bx, SECTOR_READ
+call print
+mov bx, TWO
+call print
 call print_nl
 
 mov dx, [0x9000 + 512] ; Premier mot du deuxième secteur
@@ -31,6 +42,15 @@ jmp $
 
 WELCOME:
 	db 'Bienvenue sur NicOS !', 0; Le 0 sert à terminer la chaine de caractère
+	
+SECTOR_READ:
+	db 'Lecture du secteur #', 0
+	
+ONE:
+	db '1', 0
+	
+TWO:
+	db '2', 0
 
 ; On ajoute 510 - taille du code précédent "0"
 times 510-($-$$) db 0
