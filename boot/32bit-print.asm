@@ -1,4 +1,4 @@
- [bits 32] ; on utilise le mode protégé (32 bits)
+[bits 32] ; on utilise le mode protégé (32 bits)
 
 ; Constantes
 VIDEO_MEMORY equ 0xb8000

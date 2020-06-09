@@ -9,7 +9,7 @@ Le bootsector doit faire 512 octets et doit finir par 0xaa55 qui est un magic nu
 
 Voir https://wiki.osdev.org/Memory_Map_(x86)
 
-### 0x0 à 0x3FF: Interrupt Vector Table
+### 0x0 à 0x3FF: Interrupt Vector Table (IVT)
 
 Tableau qui associe les interrupt handlers au interrupt requests. Doit être protégée pendant le boot.
 Voir: https://en.wikipedia.org/wiki/Interrupt_vector_table
@@ -52,7 +52,7 @@ L'adresse peut changer mais ne dépasse jamais 0xA0000 et 128KiB en taille.
 
 Jusqu'au commit "Stack usage" inclus, ce sont les notions de base. Ensuite le code est changé drasticallement.
 
-## Passage du mode 16 bits réel au 32 bits protégé
+## Différence entre mode 16 bits réel et mode 32 bits protégé
 
 On boot au début en mode BIOS 16 bits. Ce mode est simple mais justement trop pour un OS. C'est pourquoi les processeurs x86 ont un mode 32 bits (mode protégé).
 Les différences notables sont:
@@ -82,3 +82,14 @@ L'adresse d'un caractère est: `0xb8000 + 2 * (row * 80 + col)`
 
 Cela permet de segmenter la mémoire. La GDT sert à implément une mémoire virtuelle et non plus physique. En réalité, elle sert à indexer la mémoire virtuelle vers la mémoire physique.
 Pour plus de détails, voir le fichier boot/32bit-gdt.asm et https://www.cs.bham.ac.uk/~exr/lectures/opsys/10_11/lectures/os-dev.pdf page 38.
+
+## Passage du mode 16 bits au mode 32 bits
+
+La première chose à faire est de désactiver les inerruptions avec `cli` (clear interrupt). Le CPU va ainsi ignorer les interruptions.
+Ceci est très important car les interruptions sont manipulées différemment en 32 bits. Ainsi l'IVT n'est plus utile.
+
+La deuxième chose à faire est de passer la GDT avec `lgdt [gdt_descriptor]`
+
+Ensuite, il faut mettre le premier bit du registre de contrôle du CPU, cr0, à 1.
+Une fois que ceci est fait, le CPU est en mode 32 bits.
+Un problème est qu'il peut rester des instructions 16 bits dans le pipeline, qui seront exécutées en 32 bits. Il faut donc flush le pipeline.
