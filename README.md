@@ -51,3 +51,34 @@ L'adresse peut changer mais ne dépasse jamais 0xA0000 et 128KiB en taille.
 ## Notions de base
 
 Jusqu'au commit "Stack usage" inclus, ce sont les notions de base. Ensuite le code est changé drasticallement.
+
+## Passage du mode 16 bits réel au 32 bits protégé
+
+On boot au début en mode BIOS 16 bits. Ce mode est simple mais justement trop pour un OS. C'est pourquoi les processeurs x86 ont un mode 32 bits (mode protégé).
+Les différences notables sont:
+- Les registres sont étendus à 32 bits, ce sont les mêmes qu'en 16 bits sauf qu'on met un e devant (ex: eax) (en 64 bits le e devient un r)
+- Il y a 2 nouveaux registres: fs et gs
+- On peut accéder au offsets de mémoires 32 bits, c'est-à-dire jusqu'à 4GB
+- Le CPU est plus sophistiqué: mémoire virtuelle, segmentation etc...
+- Les interruptions sont plus sophistiquées
+- Impossible d'utiliser le BIOS
+
+Pour passer de 16 à 32 bits il faut mettre en place la GDT (Global Table Descriptor) (https://fr.wikipedia.org/wiki/Global_Descriptor_Table)
+Il faut aussi créer ses propres drivers pour chaque composants de la machine (clavier, souris, disk...).
+
+## VGA (Video Graphics Array)
+
+On peut mettre l'écran en 2 modes: texte ou graphique.
+Le VGA possède une zone mémoire, qui commence en général à 0xb8000.
+
+### Mode texte
+
+Toutes les cartes graphiques commencent en mode texte. Le mode texte est composé de 80x25 caractères.
+Dans ce mode, il n'est pas nécéssaire de s'embêter avec chaque pixel car les caractères existent de base.
+Un caractère est défini comme 2 octets, le premier est le code ASCII et le deuxième les attributs (couleurs, clignotement).
+L'adresse d'un caractère est: `0xb8000 + 2 * (row * 80 + col)`
+
+## GDT (Global Table Descriptor)
+
+Cela permet de segmenter la mémoire. La GDT sert à implément une mémoire virtuelle et non plus physique. En réalité, elle sert à indexer la mémoire virtuelle vers la mémoire physique.
+Pour plus de détails, voir le fichier boot/32bit-gdt.asm et https://www.cs.bham.ac.uk/~exr/lectures/opsys/10_11/lectures/os-dev.pdf page 38.
