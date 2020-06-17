@@ -43,7 +43,7 @@ load_kernel:
 	call print_nl
 
 	mov bx, KERNEL_OFFSET ; Lecture depuis le disque et enregistrement en 0x1000
-	mov dh, 10
+	mov dh, 9
 	mov dl, [BOOT_DRIVE]
 	call disk_load
 	ret
