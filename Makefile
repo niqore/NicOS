@@ -21,7 +21,7 @@ run: nicos.bin
 	qemu-system-i386 -fda $<
 
 debug: nicos.bin kernel.elf
-	qemu-system-i386 -s -fda $< &
+	qemu-system-i386 -s -S -fda $< &
 	${GDB} -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
 
 %.o: %.c ${HEADERS}
