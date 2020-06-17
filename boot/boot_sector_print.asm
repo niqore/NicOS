@@ -1,19 +1,19 @@
- print:
+print:
  	pusha ; Ceci met, dans l'ordre, les registres AX, CX, DX, BX, SP, BP, SI, DI sur la pile
 
-start:
+start_print:
 	mov al, [bx] ; On met dans al l'adresse de bx qui contient le premier caractère
 
 	cmp al, 0 ; Si on est à 0 c'est qu'on est à la fin de la chaine
-	je done
+	je done_print
 
 	mov ah, 0x0e; tty mode
 	int 0x10
 
 	add bx, 1
-	jmp start
+	jmp start_print
 
-done:
+done_print:
 	popa
 	ret
 

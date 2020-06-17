@@ -6,7 +6,9 @@ En mettant cette fonction, comme l'ordre est gardé, on s'assure de passer dans 
 void dummy_test_entrypoint() {
 }
 
+#include "../drivers/screen.h"
+
 void main() {
-	char* video_memory = (char*) 0xb8000;
-    *video_memory = 'X'; /* On écrit un X en première position */
+	clear_screen();
+	print_string("Bienvenue sur NicOS !\nLe CPU est actuellement en mode 32-bit");
 }
