@@ -4,7 +4,7 @@ OBJ = $(C_SOURCES:.c=.o)
 
 CC = gcc
 GDB = gdb
-CFLAGS = -Wall -Werror -g
+CFLAGS = -Wall -Werror -g -nostdinc -fno-pie -m32 -ffreestanding
 LD = ld
 NASM = nasm
 
@@ -25,7 +25,7 @@ debug: nicos.bin kernel.elf
 	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
 
 %.o: %.c $(HEADERS)
-	$(CC) $(CFLAGS) -fno-pie -m32 -ffreestanding -c $< -o $@
+	$(CC) $(CFLAGS) -c $< -o $@
 
 %.o: %.asm
 	$(NASM) $< -f elf -o $@

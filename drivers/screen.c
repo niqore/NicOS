@@ -1,5 +1,6 @@
 #include "screen.h"
 #include "ports.h"
+#include "../kernel/utils.h"
 
 int get_screen_offset(int col, int row);
 int get_cursor_offset();
@@ -7,6 +8,7 @@ void set_cursor_offset(int offset);
 int get_offset(int col, int row);
 int get_offset_row(int offset);
 int get_offset_col(int offset);
+int handle_scrolling(int offset);
 
 void print_string_at(char * str, int col, int row, char attribute) {
 
@@ -44,13 +46,6 @@ int print_char_at(char c, int col, int row, char attribute) {
 		attribute = WHITE_ON_BLACK;
 	}
 
-   /* Error control: print a red 'E' if the coords aren't right */
-    if (col >= MAX_COLS || row >= MAX_ROWS) {
-        vidmem[2 * (MAX_COLS) * (MAX_ROWS) - 2] = 'E';
-        vidmem[2 * (MAX_COLS) * (MAX_ROWS) - 1] = RED_ON_WHITE;
-        return get_offset(col, row);
-	}
-
 	int offset;
 	if (row >= 0 && col >= 0) { // On calcule l'offset ou on trouve le pointeur
 		offset = get_offset(col, row);
@@ -69,7 +64,7 @@ int print_char_at(char c, int col, int row, char attribute) {
         offset += 2;
 	}
 
-	//offset = handle_scrolling(offset); // On scroll si on est en bas de l'écran
+	offset = handle_scrolling(offset); // On scroll si on est en bas de l'écran
 	set_cursor_offset(offset); // On met à jour le curseur
 	return offset;
 }
@@ -113,4 +108,24 @@ int get_offset_row(int offset) {
 
 int get_offset_col(int offset) {
 	return (offset - (get_offset_row(offset) * 2 * MAX_COLS))/2;
+}
+
+int handle_scrolling(int offset) {
+
+    while (offset >= MAX_ROWS * MAX_COLS * 2) {
+        for (int i = 1; i < MAX_ROWS; ++i) {
+            memcpy((char *) (get_offset(0, i - 1) + VIDEO_ADDRESS),
+                    (char *) (get_offset(0, i) + VIDEO_ADDRESS),
+                    MAX_COLS * 2);
+        }
+
+        char * last_line = (char *) (get_offset(0, MAX_ROWS - 1) + VIDEO_ADDRESS);
+        for (int i = 0; i < MAX_COLS * 2; i++) {
+            last_line[i] = 0;
+        }
+
+        offset -= 2 * MAX_COLS;
+    }
+
+    return offset;
 }

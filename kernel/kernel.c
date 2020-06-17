@@ -7,6 +7,7 @@ void dummy_test_entrypoint() {
 }
 
 #include "../drivers/screen.h"
+#include "utils.h"
 
 void main() {
 	clear_screen();
