@@ -4,7 +4,7 @@ OBJ = ${C_SOURCES:.c=.o}
 
 CC = gcc
 GDB = gdb
-CFLAGS = -g
+CFLAGS = -Wall -Werror -g
 LD = ld
 NASM = nasm
 
