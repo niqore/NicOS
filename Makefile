@@ -1,29 +1,38 @@
+C_SOURCES = $(wildcard kernel/*.c drivers/*.c)
+HEADERS = $(wildcard kernel/*.h drivers/*.h)
+OBJ = ${C_SOURCES:.c=.o}
+
+CC = gcc
+GDB = gdb
+CFLAGS = -g
 LD = ld
 NASM = nasm
-CC = gcc
 
-BIN = bin
-BUILD = build
-
-all: run
-
-$(BUILD)/kernel.bin: $(BUILD)/kernel_entry.o $(BUILD)/kernel.o
-	$(LD) -m elf_i386 -s -o $@ -Ttext 0x1000 $^ --oformat binary
-	
-$(BUILD)/kernel_entry.o: boot/kernel_entry.asm
-	$(NASM) $< -f elf -o $@
-	
-$(BUILD)/kernel.o: kernel/kernel.c
-	$(CC) -fno-pie -m32 -ffreestanding -c $< -o $@
-	
-$(BUILD)/boot_sector.bin: boot/boot_sector.asm
-	$(NASM) $< -f bin -o $@
-	
-$(BIN)/nicos.bin: $(BUILD)/boot_sector.bin $(BUILD)/kernel.bin
+nicos.bin: boot/boot_sector.bin kernel.bin
 	cat $^ > $@
-	
-run: $(BIN)/nicos.bin
+
+kernel.bin: boot/kernel_entry.o ${OBJ}
+	$(LD) -m elf_i386 -s -o $@ -Ttext 0x1000 $^ --oformat binary
+
+kernel.elf: boot/kernel_entry.o ${OBJ}
+	$(LD) -m elf_i386 -s -o $@ -Ttext 0x1000 $^
+
+run: nicos.bin
 	qemu-system-i386 -fda $<
-	
+
+debug: nicos.bin kernel.elf
+	qemu-system-i386 -s -fda $< &
+	${GDB} -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
+
+%.o: %.c ${HEADERS}
+	${CC} ${CFLAGS} -fno-pie -m32 -ffreestanding -c $< -o $@
+
+%.o: %.asm
+	$(NASM) $< -f elf -o $@
+
+%.bin: %.asm
+	$(NASM) $< -f bin -o $@
+
 clean:
-	rm $(BUILD)/*.bin $(BUILD)/*.o $(BIN)/*.bin
+	rm -rf *.bin *.dis *.o os-image.bin *.elf
+	rm -rf kernel/*.o boot/*.bin drivers/*.o boot/*.o
