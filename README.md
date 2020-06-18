@@ -93,3 +93,42 @@ La deuxième chose à faire est de passer la GDT avec `lgdt [gdt_descriptor]`
 Ensuite, il faut mettre le premier bit du registre de contrôle du CPU, cr0, à 1.
 Une fois que ceci est fait, le CPU est en mode 32 bits.
 Un problème est qu'il peut rester des instructions 16 bits dans le pipeline, qui seront exécutées en 32 bits. Il faut donc flush le pipeline.
+
+## Interruptions en 32 bits
+
+### IDT (Interrupt Descriptor Table)
+
+L'IDT est exclusif au mode 32 bits. C'est une table indiquant où se trouvent les ISR (voir partie suivante). Les entrées de l'IDT sont appelées gates. Les gates contiennent eux-mêmes les Interrupt Gates, Task Gates et Trap Gates.
+
+#### Emplacement et taille
+
+L'adresse et la taille de l'IDT sont sauvegardées dans le registre _IDTR_. Pour l'affecter, il faut utiliser les commandes assembleur lidt ou sidt.
+Les 16 premiers bits du registre représente la taille (entre 256 et 4096) et les 48 bits suivants l'adresse de la table.
+
+#### Gates
+
+Un gate fait 8 octets. Les bits sont les suivants:
+- 2 octets: bits 0 à 15 de l'offset. L'offset est le point d'entrée de l'ISR (adresse)
+- 2 octets: le _code segment selector_ dans GDT ou LDT. Doit être l'adresse valide de la GDT
+- 1 octet: doit valoir 0 (unitilisé)
+- 1 octet: types et attributs:
+	- bits 0 à 3: gate type (0b0101 = 32-bit task gate, 0b0110 = 16-bit interrupt gates, 0b0111 = 16 trap, 0b1110 = 32 interrupt, 0b1111 = 32 trap)
+	- bit 4: 0 pour interrupt et trap gate
+	- bit 5 et 6: Niveau de privilège
+	- bit 7: 0 pour les interruptions inutilisées
+
+	- bit 0: 0 pour les interruptions inutilisées
+	- bit 1 et 2: Niveau de privilège
+	- bit 3: 0 pour interrupt et trap gate
+	- bits 4 à 7: gate type (0b0101 = 32-bit task gate, 0b0110 = 16-bit interrupt gates, 0b0111 = 16 trap, 0b1110 = 32 interrupt, 0b1111 = 32 trap)
+- 2 octets: bit 16 à 31 de l'offset
+
+Types de gates:
+- Interrupt gate: Permet de spécifier un ISR (voir après). La valeur courante utilisée pour le gate est 0x8E pour le 32 bits
+- Trap gate: La seule différence avec les interrupt gates est que les interrupt gates restaurent automatiquement l'état du CPU au _iret_. Valeur courante: 0x8F
+- Task gate: A task gate in the IDT references a TSS descriptor in the GDT. (voir https://wiki.osdev.org/Interrupt_Descriptor_Table#I386_Task_Gate)
+
+### ISR (Interrupt Service Routines)
+
+L'ISR est executé à chaque fois que le CPU récupère une exception.
+Les 32 première sont disponibles sur https://wiki.osdev.org/Exceptions
