@@ -132,3 +132,22 @@ Types de gates:
 
 L'ISR est executé à chaque fois que le CPU récupère une exception.
 Les 32 première sont disponibles sur https://wiki.osdev.org/Exceptions
+
+### PIC 8259 (Programmable Interrupt Controller)
+
+Le PIC est un hardware de l'architecture x86. Il permet de gérer les interruptions en dehors du CPU et donc de ne pas perdre de temps et d'éviter que le CPU check en boucle si un événement à lieu (clavier...).
+
+#### Fonctionnement global
+
+Certains périphériques envoient des signaux au PIC sur une ligne d'interruption (IRQ ligne). Par exemple, le calvier, quand une touche est frappée, envoie un IRQ1 sur le PIC. Un PIC à 8 IRQ line.
+
+Les ancien système n'utilisaient qu'un seul PIC, mais les plus récents en utilisent 2 en cascade. Ainsi, il y a une possibilité de 15 interruptions (et non 16, car le PIC2 doit pouvoir envoyer le signal sur l'IRQ2 du PIC1).
+
+#### Fonctionnement interne
+
+Quand un PIC reçoit un signal, il met un bit à 1 qui permet de dire que l'interruption doit être traitée. Si un channel n'est pas masqué et que le bit est à 0, l'interruption est alors traitée. L'interruption est transmise du PIC2 au PIC1 (esclave à maitre) puis du PIC1 au CPU.
+
+#### IO-APIC (I/O Advanced Programmable Interrupt Controller)
+
+Aujourd'hui, ce sont les APIC qui sont utilisés pour les processeurs multi coeurs. Chaque processeur contient un local APIC et il y a des I/O APIC répartis dans le système par exemple au niveau des chipsets ou bridges PCI. Un I/O APIC possède 24 entrées a une base qui définit ses numéros d'interruption (il génèrera alors des interruptions entre base et base + 23).
+Voir Intel OS Dev.pdf chapitre 10.
