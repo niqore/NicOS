@@ -1,5 +1,5 @@
-bin/*
 !bin/.gitkeep
 **/*.o
 **/*.bin
 **/*.elf
+**/.directory
