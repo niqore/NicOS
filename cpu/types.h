@@ -9,6 +9,10 @@ typedef          short sint16_t;
 typedef unsigned char  uint8_t;
 typedef          char  sint8_t;
 
+/* Types for `void *' pointers.  */
+typedef long int		    intptr_t;
+typedef unsigned long int	uintptr_t;
+
 #define low_16(address) (uint16_t)((address) & 0xFFFF)
 #define high_16(address) (uint16_t)(((address) >> 16) & 0xFFFF)
 

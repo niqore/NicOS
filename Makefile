@@ -1,5 +1,5 @@
-C_SOURCES = $(wildcard kernel/*.c drivers/*.c cpu/*.c)
-HEADERS = $(wildcard kernel/*.h drivers/*.h cpu/*.h)
+C_SOURCES = $(shell find . -name "*.c")
+HEADERS = $(shell find . -name "*.h")
 OBJ = $(C_SOURCES:.c=.o cpu/interrupt.o)
 
 CC = gcc

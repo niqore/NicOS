@@ -10,14 +10,15 @@ void dummy_test_entrypoint() {
 #include "utils.h"
 #include "../cpu/isr.h"
 #include "../cpu/idt.h"
+#include "../cpu/pic.h"
 
 void main() {
 	clear_screen();
 	print_string("Bienvenue sur NicOS !\nLe CPU est actuellement en mode 32-bit\n\n");
-	
-	// Initialisation des interruptions
+
 	isr_install();
-	// Test des interruptions
-    __asm__ __volatile__("int $2");
-	__asm__ __volatile__("int $3");
+
+	if (apic_available()) {
+		enable_apic();
+	}
 }
