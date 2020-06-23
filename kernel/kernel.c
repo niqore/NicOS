@@ -9,8 +9,8 @@ void dummy_test_entrypoint() {
 #include "../drivers/screen.h"
 #include "utils.h"
 #include "../cpu/isr.h"
-#include "../cpu/idt.h"
 #include "../cpu/pic.h"
+#include "../cpu/timer.h"
 
 void main() {
 	clear_screen();
@@ -21,4 +21,7 @@ void main() {
 	if (apic_available()) {
 		enable_apic();
 	}
+
+	asm volatile("sti");
+    init_timer(50);
 }
