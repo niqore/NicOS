@@ -1,12 +1,4 @@
-void * memcpy(void *dest, const void *src, int len) {
-
-	char *d = dest;
-	const char *s = src;
-	while (len--) {
-		*d++ = *s++;
-	}
-	return dest;
-}
+#include "string.h"
 
 /* Return the length of the null-terminated string STR.  Scan for
    the null terminator quickly by testing four bytes at a time.  */
@@ -78,7 +70,7 @@ int strlen(const char *str) {
 			}
 		}
     }
-}
+} 
 
 void strrev(unsigned char *str) {
 
