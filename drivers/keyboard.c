@@ -1,11 +1,13 @@
 #include "keyboard.h"
-#include "ports.h"
-#include "../cpu/isr.h"
+#include "../cpu/ports.h"
+#include "../cpu/interrupts/isr.h"
 #include "screen.h"
 #include "../cpu/types.h"
-#include "../kernel/utils.h"
+#include "../libc/string.h"
 
 static void keyboard_callback(registers_t regs) {
+
+	regs = regs;
 
     /* Le PIC met le scancode dans 0x60 */
     uint8_t scancode = port_byte_in(0x60);

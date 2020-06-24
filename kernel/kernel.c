@@ -7,13 +7,11 @@ void dummy_test_entrypoint() {
 }
 
 #include "../drivers/screen.h"
-#include "utils.h"
-#include "../cpu/isr.h"
-#include "../cpu/pic.h"
-#include "../cpu/timer.h"
-#include "../drivers/keyboard.h"
+#include "../cpu/interrupts/isr.h"
+#include "../cpu/interrupts/pic.h"
 
 void main() {
+
 	clear_screen();
 	print_string("Bienvenue sur NicOS !\nLe CPU est actuellement en mode 32-bit\n\n");
 
@@ -23,7 +21,5 @@ void main() {
 		enable_apic();
 	}
 
-	asm volatile("sti");
-    init_timer(50);
-    init_keyboard();
+	irq_install();
 }

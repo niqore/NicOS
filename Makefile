@@ -1,10 +1,10 @@
 C_SOURCES = $(shell find . -name "*.c")
 HEADERS = $(shell find . -name "*.h")
-OBJ = $(C_SOURCES:.c=.o cpu/interrupt.o)
+OBJ = $(C_SOURCES:.c=.o cpu/interrupts/interrupt.o)
 
 CC = gcc
 GDB = gdb
-CFLAGS = -Wall -Werror -g -nostdinc -fno-pie -m32 -ffreestanding
+CFLAGS = -Wall -Werror -Wextra -g -nostdlib -nostdinc -fno-pie -m32 -ffreestanding -fno-builtin -fno-stack-protector -nostartfiles -nodefaultlibs
 LD = ld
 NASM = nasm
 

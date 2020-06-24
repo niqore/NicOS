@@ -1,7 +1,7 @@
 #include "pic.h"
-#include "types.h"
-#include "cpuid.h"
-#include "msr.h"
+#include "../types.h"
+#include "../cpuid.h"
+#include "../msr.h"
 
 #define IA32_APIC_BASE_MSR 0x1B
 #define IA32_APIC_BASE_MSR_ENABLE 0x800

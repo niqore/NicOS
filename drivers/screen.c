@@ -1,6 +1,7 @@
 #include "screen.h"
-#include "ports.h"
-#include "../kernel/utils.h"
+#include "../cpu/ports.h"
+#include "../libc/string.h"
+#include "../libc/stdlib.h"
 
 int get_screen_offset(int col, int row);
 int get_cursor_offset();
