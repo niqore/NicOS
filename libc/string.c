@@ -110,3 +110,17 @@ int itoa(int num, unsigned char* str, int len, int base) {
 	strrev(str);
 	return 0;
 }
+
+char lower_case(char c) {
+	if (c <= 'Z' && c >= 'A') {
+		return c + 'a' - 'A';
+	}
+	return c;
+}
+
+char upper_case(char c) {
+	if (c <= 'z' && c >= 'a') {
+		return c - 'a' + 'A';
+	}
+	return c;
+}
