@@ -3,7 +3,7 @@
 #include "../cpu/interrupts/isr.h"
 #include "screen.h"
 #include "../cpu/types.h"
-#include "../libc/string.h"
+#include "../kernel/cli.h"
 
 static void keyboard_callback(registers_t regs) {
 
@@ -11,11 +11,13 @@ static void keyboard_callback(registers_t regs) {
 
     /* Le PIC met le scancode dans 0x60 */
     uint8_t scancode = port_byte_in(0x60);
-    unsigned char sc_ascii[4];
+    /*unsigned char sc_ascii[4];
     itoa(scancode, sc_ascii, 4, 16);
     print_string("Keyboard scancode: 0x");
     print_string((char *) sc_ascii);
-    print_string("\n");
+    print_string("\n");*/
+
+    handle_key(scancode);
 }
 
 void init_keyboard() {

@@ -9,6 +9,7 @@ void dummy_test_entrypoint() {
 #include "../drivers/screen.h"
 #include "../cpu/interrupts/isr.h"
 #include "../cpu/interrupts/pic.h"
+#include "cli.h"
 
 void main() {
 
@@ -22,4 +23,6 @@ void main() {
 	}
 
 	irq_install();
+
+	init_cli();
 }
