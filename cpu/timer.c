@@ -9,12 +9,12 @@ uint32_t tick = 0;
 static void timer_callback(registers_t regs) {
 
     tick++;
-    print_string("Tick: ");
+    /*print_string("Tick: ");
     
     unsigned char tick_ascii[256];
     itoa(tick, tick_ascii, 256, 10);
     print_string((char *) tick_ascii);
-    print_char('\n');
+    print_char('\n');*/
 }
 
 void init_timer(uint32_t freq) {
