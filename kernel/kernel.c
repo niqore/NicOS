@@ -11,6 +11,7 @@ void dummy_test_entrypoint() {
 #include "../cpu/isr.h"
 #include "../cpu/pic.h"
 #include "../cpu/timer.h"
+#include "../drivers/keyboard.h"
 
 void main() {
 	clear_screen();
@@ -24,4 +25,5 @@ void main() {
 
 	asm volatile("sti");
     init_timer(50);
+    init_keyboard();
 }
