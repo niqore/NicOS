@@ -10,6 +10,7 @@ void dummy_test_entrypoint() {
 #include "../cpu/interrupts/isr.h"
 #include "../cpu/interrupts/pic.h"
 #include "cli.h"
+#include "../libc/stdlib.h"
 
 void main() {
 
@@ -25,4 +26,6 @@ void main() {
 	irq_install();
 
 	init_cli();
+
+	init_memory_allocator();
 }
