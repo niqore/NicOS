@@ -130,3 +130,14 @@ int handle_scrolling(int offset) {
 
     return offset;
 }
+
+void remove_last_character() {
+	int offset = get_cursor_offset();
+	if (offset == 0) {
+		return;
+	}
+	unsigned char * vidmem = (unsigned char*) VIDEO_ADDRESS;
+	offset -= 2;
+	vidmem[offset] = ' ';
+	set_cursor_offset(offset);
+}

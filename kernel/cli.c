@@ -57,6 +57,14 @@ void add_buffer_char(char c) {
 	print_char(c);
 }
 
+void handle_backspace() {
+	if (buffer_pos == 0) {
+		return;
+	}
+	buffer_pos--;
+	remove_last_character();
+}
+
 void handle_key(uint8_t scancode) {
 	switch (scancode) {
 		case 0x1: //Escape
@@ -198,7 +206,8 @@ void handle_key(uint8_t scancode) {
 				add_buffer_char('=');
 			}
 			break;
-		case 0xE: //Backspace
+		case 0xE:
+			handle_backspace();
 			break;
 		case 0xF: //Tab
 			break;

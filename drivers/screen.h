@@ -15,3 +15,4 @@ void clear_screen();
 void print_char(char c);
 void print_string_at(char * str, int col, int row, char attribute);
 void print_string(char * str);
+void remove_last_character();
