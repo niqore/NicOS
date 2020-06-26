@@ -7,4 +7,6 @@ void * memcpy(void *dest, const void *src, int len);
 
 void* malloc(unsigned int size);
 
+void free(void* ptr);
+
 #endif

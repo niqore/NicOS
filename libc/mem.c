@@ -48,6 +48,7 @@ void add_free_block(free_memory_block * free_block) {
 
 	free_block->next = free_list;
 	free_block->previous = free_list->previous;
+	free_block->previous->next = free_block;
 	free_list->previous = free_block;
 	free_list = free_block;
 }
@@ -85,15 +86,29 @@ void* malloc(unsigned int size) {
 		*/
 		if (free_use_size - size - sizeof(free_memory_block) - 1 > 0) {
 			/* On crée un nouveau bloc libre avec l'espace restant */
-			free_memory_block * newBlock = free_use + size + sizeof(allocated_memory_block);
+			free_memory_block * newBlock = (free_memory_block*) ((char*) free_use + size + sizeof(allocated_memory_block));
 			newBlock->size = free_use_size - size - sizeof(allocated_memory_block);
 			add_free_block(newBlock);
 		}
 		
 		/* On retourne le bloc alloue sans le header */
-		return allocated + sizeof(allocated_memory_block);
+		return (char*) allocated + sizeof(allocated_memory_block);
 	}
 	else {
 		return 0;
+	}
+}
+
+void free(void* ptr) {
+
+	/* On récupère le header du bloc alloué */
+	allocated_memory_block * allocated = (allocated_memory_block *) ((char*) ptr - sizeof(allocated_memory_block));
+	unsigned int size = allocated->size;
+
+	/* On ajoute un bloc libre si on a la place */
+	if (sizeof(free_memory_block) - size - sizeof(allocated_memory_block) > 0) {
+		free_memory_block * newBlock = (free_memory_block *) allocated;
+		newBlock->size = size + sizeof(allocated_memory_block);
+		add_free_block(newBlock);
 	}
 }
