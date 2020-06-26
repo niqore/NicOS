@@ -30,6 +30,7 @@ void main() {
 	init_memory_allocator();
 
 	char* c = (char*) malloc(60);
+	free(c);
 	c = (char*) malloc(30);
-	c = c;
+	free(c);
 }

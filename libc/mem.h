@@ -4,7 +4,7 @@
 typedef struct _allocated_memory_block allocated_memory_block;
 
 struct _allocated_memory_block {
-	int size;
+	unsigned int size;
 };
 
 typedef struct _free_memory_block free_memory_block;
