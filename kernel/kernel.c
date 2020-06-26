@@ -28,4 +28,8 @@ void main() {
 	init_cli();
 
 	init_memory_allocator();
+
+	char* c = (char*) malloc(60);
+	c = (char*) malloc(30);
+	c = c;
 }
