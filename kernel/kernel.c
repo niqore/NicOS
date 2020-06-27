@@ -29,8 +29,10 @@ void main() {
 
 	init_memory_allocator();
 
-	char* c = (char*) malloc(60);
-	free(c);
-	c = (char*) malloc(30);
-	free(c);
+	char* c1 = (char*) malloc(1);
+	char* c2 = (char*) malloc(30);
+	free(c1);
+	char* c3 = (char*) malloc(2);
+	free(c2);
+	free(c3);
 }

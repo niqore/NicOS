@@ -84,7 +84,7 @@ void* malloc(unsigned int size) {
 		On teste si dans le nouvel espace restant, il est possible de mettre le header au complet pour ne pas empieter sur d'autres zones mémoires
 		On perd quelques octets si jamais la condition n'est pas remplie
 		*/
-		if (free_use_size - size - sizeof(free_memory_block) - 1 > 0) {
+		if (free_use_size > sizeof(free_memory_block) + size) {
 			/* On crée un nouveau bloc libre avec l'espace restant */
 			free_memory_block * newBlock = (free_memory_block*) ((char*) free_use + size + sizeof(allocated_memory_block));
 			newBlock->size = free_use_size - size - sizeof(allocated_memory_block);
