@@ -112,3 +112,32 @@ void free(void* ptr) {
 		add_free_block(newBlock);
 	}
 }
+
+void * memset (void * dest, int val, unsigned len) {
+	unsigned char * ptr = dest;
+	while (len-- > 0)
+		*ptr++ = val;
+	return dest;
+}
+
+void * calloc(unsigned int size) {
+	void * ptr = malloc(size);
+	if (ptr != 0) {
+		return memset(ptr, 0, size);
+	}
+	return 0;
+}
+
+void * realloc(void * ptr, unsigned int size) {
+
+	void * newPtr = malloc(size);
+
+	/* On récupère le header du bloc alloué */
+	allocated_memory_block * allocated = (allocated_memory_block *) ((char*) ptr - sizeof(allocated_memory_block));
+	unsigned int allSize = allocated->size;
+
+	memcpy(newPtr, ptr, allSize);
+	free(ptr);
+
+	return newPtr;
+}
