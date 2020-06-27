@@ -28,11 +28,4 @@ void main() {
 	init_cli();
 
 	init_memory_allocator();
-
-	char* c1 = (char*) malloc(1);
-	char* c2 = (char*) malloc(30);
-	free(c1);
-	char* c3 = (char*) malloc(2);
-	free(c2);
-	free(c3);
 }
