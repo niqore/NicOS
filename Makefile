@@ -1,6 +1,6 @@
 C_SOURCES = $(shell find . -name "*.c")
 HEADERS = $(shell find . -name "*.h")
-OBJ = $(C_SOURCES:.c=.o cpu/interrupts/interrupt.o)
+OBJ = $(C_SOURCES:.c=.o cpu/interrupts/interrupt.o kernel/switch_pm.o)
 
 CC = gcc
 GDB = gdb
@@ -12,10 +12,10 @@ nicos.bin: boot/boot_sector.bin kernel.bin
 	cat $^ > $@
 
 kernel.bin: boot/kernel_entry.o $(OBJ)
-	$(LD) -m elf_i386 -s -o $@ -Ttext 0x1000 $^ --oformat binary
+	$(LD) -m elf_i386 -s -o $@ -T script.ld $^ --oformat binary
 
 kernel.elf: boot/kernel_entry.o $(OBJ)
-	$(LD) -m elf_i386 -o $@ -Ttext 0x1000 $^
+	$(LD) -m elf_i386 -o $@ -T script.ld $^
 
 run: nicos.bin
 	qemu-system-i386 -fda $<

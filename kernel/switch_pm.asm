@@ -1,4 +1,7 @@
+%include "kernel/gdt.asm"
+
 [bits 16]
+global switch_to_pm
 switch_to_pm:
 	cli ; Désactivation des interruptions
 	lgdt [gdt_descriptor] ; Chargement de la GDT
@@ -8,6 +11,7 @@ switch_to_pm:
 	jmp CODE_SEG:init_pm ; On saute loin dans le code pour flush le pipeline
 	
 [bits 32]
+[extern main]
 init_pm:
 	mov ax, DATA_SEG ; On update les registres des segments
 	mov ds, ax
@@ -15,8 +19,4 @@ init_pm:
 	mov es, ax
 	mov fs, ax
 	mov gs, ax
-	
-	mov ebp, 0x90000 ; On met à jour la pile dans un endroit libre
-	mov esp, ebp ; On place ebp en haut de la pile
-	
-	call BEGIN_PM
+	call main
