@@ -1,3 +1,4 @@
+[bits 16]
 gdt_start: ; Les labels doivent être présent pour calculer la taille et les sauts
  	dd 0x0 ; dd = Define double word (4 octets) (db = define byte 1o, dw = define word 2o)
  	dd 0x0 ; La GDT commence par 8 octets à 0

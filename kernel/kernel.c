@@ -1,16 +1,16 @@
-/*
-Permet d'éviter au kernel à sauter en kernel.c:0x00
-En effet, la place de ce code dépend du linker, il peut se trouver aussi bien au début qu'à la fin.
-En mettant cette fonction, comme l'ordre est gardé, on s'assure de passer dans main()
-*/
-void dummy_test_entrypoint() {
-}
+void main_16bit() __attribute__((section(".start")));
 
 #include "../drivers/screen.h"
 #include "../cpu/interrupts/isr.h"
 #include "../cpu/interrupts/pic.h"
 #include "cli.h"
 #include "../libc/stdlib.h"
+
+void main_16bit() {
+
+	extern void switch_to_pm();
+	switch_to_pm();
+}
 
 void main() {
 

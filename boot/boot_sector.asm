@@ -24,15 +24,13 @@ call print
 call print_nl
 
 call load_kernel
-call switch_to_pm
+
+call KERNEL_OFFSET ; Appelle de la fonction d'entrée dans le kernel
 
 ; Boucle infinie. Ne sera jamais exécutée
 jmp $
 
 %include "boot/boot_sector_print.asm"
-%include "boot/32bit-gdt.asm"
-;%include "boot/32bit-print.asm"
-%include "boot/32bit-switch.asm"
 %include "boot/boot_sector_print_hex.asm"
 %include "boot/boot_sector_disk.asm"
 
@@ -47,11 +45,6 @@ load_kernel:
 	mov dl, [BOOT_DRIVE]
 	call disk_load
 	ret
-
-[bits 32]
-BEGIN_PM: ; Point d'entrée en mode 32 bits
-	call KERNEL_OFFSET ; Appelle de la fonction d'entrée dans le kernel
-	jmp $
 
 WELCOME:
 	db 'Bienvenue sur NicOS !', 0; Le 0 sert à terminer la chaine de caractère
