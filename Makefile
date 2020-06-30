@@ -11,10 +11,10 @@ NASM = nasm
 nicos.bin: boot/boot_sector.bin kernel.bin
 	cat $^ > $@
 
-kernel.bin: boot/kernel_entry.o $(OBJ)
+kernel.bin: $(OBJ)
 	$(LD) -m elf_i386 -s -o $@ -T script.ld $^ --oformat binary
 
-kernel.elf: boot/kernel_entry.o $(OBJ)
+kernel.elf: $(OBJ)
 	$(LD) -m elf_i386 -o $@ -T script.ld $^
 
 run: nicos.bin
