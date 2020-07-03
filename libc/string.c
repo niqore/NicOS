@@ -85,30 +85,46 @@ void strrev(unsigned char *str) {
 	}
 }
 
-int itoa(int num, unsigned char* str, int len, int base) {
+char* itoa(int value, char* buffer, int base) {
 
-	int sum = num;
+	// invalid input
+	if (base < 2 || base > 32)
+		return buffer;
+
+	// consider absolute value of number
+	int n = value;
+	if (n < 0) {
+		n = - n;
+	}
+
 	int i = 0;
-	int digit;
-	if (len == 0) {
-		return -1;
+	while (n)
+	{
+		int r = n % base;
+
+		if (r >= 10) 
+			buffer[i++] = 65 + (r - 10);
+		else
+			buffer[i++] = 48 + r;
+
+		n = n / base;
 	}
-	do {
-		digit = sum % base;
-		if (digit < 0xA) {
-			str[i++] = '0' + digit;
-		}
-		else {
-			str[i++] = 'A' + digit - 0xA;
-		}
-		sum /= base;
-	} while (sum && (i < (len - 1)));
-	if (i == (len - 1) && sum) {
-		return -1;
-	}
-	str[i] = '\0';
-	strrev(str);
-	return 0;
+
+	// if number is 0
+	if (i == 0)
+		buffer[i++] = '0';
+
+	// If base is 10 and value is negative, the resulting string 
+	// is preceded with a minus sign (-)
+	// With any other base, value is always considered unsigned
+	if (value < 0 && base == 10)
+		buffer[i++] = '-';
+
+	buffer[i] = '\0'; // null terminate string
+
+	// reverse the string and return it
+	strrev((unsigned char*) buffer);
+	return buffer;
 }
 
 char lower_case(char c) {
@@ -124,3 +140,35 @@ char upper_case(char c) {
 	}
 	return c;
 }
+
+int strcmp(const char *p1, const char *p2) {
+	const unsigned char *s1 = (const unsigned char *) p1;
+	const unsigned char *s2 = (const unsigned char *) p2;
+	unsigned char c1, c2;
+	do {
+		c1 = (unsigned char) *s1++;
+		c2 = (unsigned char) *s2++;
+		if (c1 == '\0')
+			return c1 - c2;
+		}
+	while (c1 == c2);
+	return c1 - c2;
+}
+
+/*
+fait en sorte que le nombre dans s fasse decimals décimales
+*/
+char* format_number_decimals(char *s, int decimals) {
+	int len = strlen(s);
+	int missing_dec = decimals - len;
+	if (missing_dec <= 0) {
+		return s;
+	}
+	for (int i = len; i != -1; --i) {
+		s[i + missing_dec] = s[i];
+	}
+	for (int i = 0; i < missing_dec; ++i) {
+		s[i] = '0';
+	}
+	return s;
+} 

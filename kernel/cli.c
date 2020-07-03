@@ -1,6 +1,8 @@
 #include "cli.h"
 #include "../drivers/screen.h"
 #include "../libc/string.h"
+#include "memory_map.h"
+#include "../libc/stdlib.h"
 
 char buffer[512];
 int buffer_pos = 0;
@@ -43,11 +45,19 @@ void init_cli() {
 
 void execute_buffer() {
 	print_char('\n');
+
+	if (buffer_pos < 512) {
+		buffer[buffer_pos + 1] = '\0';
+		if (!strcmp(buffer, "raminfo")) {
+			print_ram_info((SMAP_entry_t*) MEM_MAP_STRUCTS_ADDR, *((uint32_t*) MEM_MAP_ENT_ADDR));
+		}
+	}
+
 	init_cli();
 }
 
 void add_buffer_char(char c) {
-	if (buffer_pos == 512) {
+	if (buffer_pos == 511) {
 		return;
 	}
 	if (is_shifting()) {
