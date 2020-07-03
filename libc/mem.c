@@ -1,5 +1,7 @@
 #include "mem.h"
 #include "stdlib.h"
+#include "../drivers/screen.h"
+#include "string.h"
 
 void * memcpy(void *dest, const void *src, int len) {
 
@@ -9,13 +11,6 @@ void * memcpy(void *dest, const void *src, int len) {
 		*d++ = *s++;
 	}
 	return dest;
-}
-
-void init_memory_allocator() {
-	free_list = (void*) FIRST_FREE_ADDR;
-	free_list->size = MAX_FREE_ADDR - FIRST_FREE_ADDR;
-	free_list->next = free_list;
-	free_list->previous = free_list;
 }
 
 void* find_first_free_available(unsigned int size) {
@@ -62,6 +57,20 @@ void remove_free_block(free_memory_block * free_block) {
 
 	free_block->next->previous = free_block->previous;
 	free_block->previous->next = free_block->next;
+}
+
+void init_memory_allocator(SMAP_entry_t* map, int entries) {
+
+	free_list = 0;
+	for (int i = 0; i < entries; ++i) {
+		SMAP_entry_t m = map[i];
+		if ((!m.LengthH && !m.LengthL) || m.Type != 1 || m.BaseL == 0) {
+			continue;
+		}
+		free_memory_block * newBlock = (free_memory_block*) m.BaseL;
+		newBlock->size = m.LengthL; // Le système est en 32 bits donc on ne devrait pas dépasser 32 bits en taille
+		add_free_block(newBlock);
+	}
 }
 
 void* malloc(unsigned int size) {
@@ -140,4 +149,43 @@ void * realloc(void * ptr, unsigned int size) {
 	free(ptr);
 
 	return newPtr;
+}
+
+void print_ram_info(SMAP_entry_t* map, int entries) {
+
+	char itoa_buffer[16];
+	unsigned int amount = 0;
+
+	for (int i = 0; i < entries; ++i) {
+		SMAP_entry_t m = map[i];
+		if (m.BaseL == 0xfffc0000) {
+			continue;
+		}
+		amount += m.LengthL;
+		print_string("0x");
+		print_string(format_number_decimals(itoa(m.BaseH, itoa_buffer, 16), 8));
+		print_string(format_number_decimals(itoa(m.BaseL, itoa_buffer, 16), 8));
+		print_string(" -> 0x");
+		print_string(format_number_decimals(itoa(m.BaseH + m.LengthH, itoa_buffer, 16), 8));
+		print_string(format_number_decimals(itoa(m.BaseL + m.LengthL, itoa_buffer, 16), 8));
+		print_string("; Type = ");
+		print_string(itoa(m.Type, itoa_buffer, 16));
+		if (m.Type == 1) {
+			print_string(" (Usable)");
+		}
+		else if (m.Type == 2) {
+			print_string(" (Reserved)");
+		}
+		else {
+			print_string(" (Undefined)");
+		}
+		print_string("; ACPI = ");
+		print_string(itoa(m.ACPI, itoa_buffer, 16));
+		print_char('\n');
+	}
+	print_string("Total size: ");
+	print_string(itoa(amount / 1000000, itoa_buffer, 10));
+	print_string(" MB (");
+	print_string(itoa(amount, itoa_buffer, 10));
+	print_string(" B)\n");
 }

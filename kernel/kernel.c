@@ -1,16 +1,10 @@
-void main_16bit() __attribute__((section(".start")));
-
 #include "../drivers/screen.h"
 #include "../cpu/interrupts/isr.h"
 #include "../cpu/interrupts/pic.h"
 #include "cli.h"
 #include "../libc/stdlib.h"
-
-void main_16bit() {
-
-	extern void switch_to_pm();
-	switch_to_pm();
-}
+#include "memory_map.h"
+#include "kernel.h"
 
 void main() {
 
@@ -27,5 +21,8 @@ void main() {
 
 	init_cli();
 
-	init_memory_allocator();
+	//TODO: Vérifier si la free_list est bonne
+	init_memory_allocator((SMAP_entry_t*) MEM_MAP_STRUCTS_ADDR, *((uint32_t*) MEM_MAP_ENT_ADDR));
+
+	while (1);
 }

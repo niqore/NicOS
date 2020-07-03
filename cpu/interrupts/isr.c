@@ -119,8 +119,7 @@ char *exception_messages[] = {
 void isr_handler(registers_t r) {
     print_string("received interrupt: ");
     unsigned char s[3];
-    itoa(r.int_no, s, 3, 10);
-    print_string((char*) s);
+    print_string(itoa(r.int_no, (char*) s, 10));
     print_string("\n");
     print_string(exception_messages[r.int_no]);
     print_string("\n");

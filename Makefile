@@ -1,10 +1,11 @@
-C_SOURCES = $(shell find . -name "*.c")
+C_SOURCES_32 = $(shell find . -name "*.c")
+C_SOURCES_16 = $(shell find . -name "*.c16")
 HEADERS = $(shell find . -name "*.h")
-OBJ = $(C_SOURCES:.c=.o cpu/interrupts/interrupt.o kernel/switch_pm.o)
+OBJ = $(C_SOURCES_32:.c=.o cpu/interrupts/interrupt.o kernel/switch_pm.o kernel/memory_map.o) $(C_SOURCES_16:.c16=.o)
 
 CC = gcc
 GDB = gdb
-CFLAGS = -Wall -Werror -Wextra -g -nostdlib -nostdinc -fno-pie -m32 -ffreestanding -fno-builtin -fno-stack-protector -nostartfiles -nodefaultlibs
+CFLAGS = -Wall -Werror -Wextra -g -nostdlib -nostdinc -fno-pie -ffreestanding -fno-builtin -fno-stack-protector -nostartfiles -nodefaultlibs
 LD = ld
 NASM = nasm
 
@@ -25,7 +26,10 @@ debug: nicos.bin kernel.elf
 	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
 
 %.o: %.c $(HEADERS)
-	$(CC) $(CFLAGS) -c $< -o $@
+	$(CC) $(CFLAGS) -m32 -c $< -o $@
+
+%.o: %.c16 $(HEADERS)
+	$(CC) $(CFLAGS) -m16 -x c -c $< -o $@
 
 %.o: %.asm
 	$(NASM) $< -f elf -o $@

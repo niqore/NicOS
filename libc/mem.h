@@ -1,5 +1,5 @@
-#define FIRST_FREE_ADDR 0x1000000
-#define MAX_FREE_ADDR 0xC0000000
+#ifndef MEM_H
+#define MEM_H
 
 typedef struct _allocated_memory_block allocated_memory_block;
 
@@ -16,3 +16,5 @@ struct _free_memory_block {
 };
 
 free_memory_block * free_list;
+
+#endif

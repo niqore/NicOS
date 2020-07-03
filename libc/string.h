@@ -3,12 +3,16 @@
 
 void strrev(unsigned char *str);
 
-int itoa(int num, unsigned char* str, int len, int base);
+char* itoa(int value, char* buffer, int base);
 
 int strlen(const char *str);
 
 char lower_case(char c);
 
 char upper_case(char c);
+
+int strcmp(const char *p1, const char *p2);
+
+char* format_number_decimals(char *s, int decimals);
 
 #endif
