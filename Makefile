@@ -19,10 +19,10 @@ kernel.elf: $(OBJ)
 	$(LD) -m elf_i386 -o $@ -T script.ld $^
 
 run: nicos.bin
-	qemu-system-i386 -fda $<
+	qemu-system-i386 -m 1G -fda $<
 
 debug: nicos.bin kernel.elf
-	qemu-system-i386 -s -S -fda $< &
+	qemu-system-i386 -m 1G -s -S -fda $< &
 	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
 
 %.o: %.c $(HEADERS)
