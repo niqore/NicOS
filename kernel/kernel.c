@@ -21,7 +21,6 @@ void main() {
 
 	init_cli();
 
-	//TODO: Vérifier si la free_list est bonne
 	init_memory_allocator((SMAP_entry_t*) MEM_MAP_STRUCTS_ADDR, *((uint32_t*) MEM_MAP_ENT_ADDR));
 
 	while (1);
