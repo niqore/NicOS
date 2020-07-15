@@ -5,6 +5,7 @@
 #include "../libc/stdlib.h"
 #include "memory_map.h"
 #include "kernel.h"
+#include "../drivers/pci.h"
 
 void main() {
 
@@ -22,6 +23,8 @@ void main() {
 	init_cli();
 
 	init_memory_allocator((SMAP_entry_t*) MEM_MAP_STRUCTS_ADDR, *((uint32_t*) MEM_MAP_ENT_ADDR));
+
+	scan_and_register_devices();
 
 	while (1);
 }
