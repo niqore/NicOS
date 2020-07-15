@@ -18,11 +18,15 @@ kernel.bin: $(OBJ)
 kernel.elf: $(OBJ)
 	$(LD) -m elf_i386 -o $@ -T script.ld $^
 
+
 run: nicos.bin
-	qemu-system-i386 -m 1G -fda $<
+ifeq (,$(wildcard ./DRIVE.img))
+	dd if=/dev/zero of=DRIVE.img bs=1k count=100000
+endif
+	qemu-system-i386 -m 1G -drive file=DRIVE.img,if=ide -fda $<
 
 debug: nicos.bin kernel.elf
-	qemu-system-i386 -m 1G -s -S -fda $< &
+	qemu-system-i386 -m 1G -drive file=DRIVE.img,if=ide -s -S -fda $< &
 	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
 
 %.o: %.c $(HEADERS)
