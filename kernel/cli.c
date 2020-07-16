@@ -52,7 +52,7 @@ void execute_buffer() {
 		if (!strcmp(buffer, "raminfo")) {
 			print_ram_info((SMAP_entry_t*) MEM_MAP_STRUCTS_ADDR, *((uint32_t*) MEM_MAP_ENT_ADDR));
 		}
-		else if (!strcmp(buffer, "pcilist")) {
+		else if (!strcmp(buffer, "lspci")) {
 			print_pci_devices_info(device_list, device_count);
 		}
 	}

@@ -18,17 +18,15 @@ kernel.bin: $(OBJ)
 kernel.elf: $(OBJ)
 	$(LD) -m elf_i386 -o $@ -T script.ld $^
 
-
-run: nicos.bin
+create_fat_disk:
 ifeq (,$(wildcard ./DRIVE.img))
 	dd if=/dev/zero of=DRIVE.img bs=1k count=100000
 endif
+
+run: nicos.bin create_fat_disk
 	qemu-system-i386 -m 1G -drive file=DRIVE.img,if=ide -fda $<
 
-debug: nicos.bin kernel.elf
-ifeq (,$(wildcard ./DRIVE.img))
-	dd if=/dev/zero of=DRIVE.img bs=1k count=100000
-endif
+debug: nicos.bin kernel.elf create_fat_disk
 	qemu-system-i386 -m 1G -drive file=DRIVE.img,if=ide -s -S -fda $< &
 	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
 
