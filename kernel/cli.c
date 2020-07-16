@@ -3,6 +3,7 @@
 #include "../libc/string.h"
 #include "memory_map.h"
 #include "../libc/stdlib.h"
+#include "kernel.h"
 
 char buffer[512];
 int buffer_pos = 0;
@@ -50,6 +51,9 @@ void execute_buffer() {
 		buffer[buffer_pos] = '\0';
 		if (!strcmp(buffer, "raminfo")) {
 			print_ram_info((SMAP_entry_t*) MEM_MAP_STRUCTS_ADDR, *((uint32_t*) MEM_MAP_ENT_ADDR));
+		}
+		else if (!strcmp(buffer, "pcilist")) {
+			print_pci_devices_info(device_list, device_count);
 		}
 	}
 

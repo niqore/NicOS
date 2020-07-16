@@ -5,7 +5,6 @@
 #include "../libc/stdlib.h"
 #include "memory_map.h"
 #include "kernel.h"
-#include "../drivers/pci.h"
 
 void main() {
 
@@ -24,7 +23,9 @@ void main() {
 
 	init_memory_allocator((SMAP_entry_t*) MEM_MAP_STRUCTS_ADDR, *((uint32_t*) MEM_MAP_ENT_ADDR));
 
-	scan_and_register_devices();
+	device_count = count_pci_devices();
+	device_list = (generic_pci_device_header_t*) malloc(device_count * sizeof(generic_pci_device_header_t));
+	scan_and_register_pci_devices(device_list);
 
 	while (1);
 }
