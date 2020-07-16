@@ -9,6 +9,8 @@ CFLAGS = -Wall -Werror -Wextra -g -nostdlib -nostdinc -fno-pie -ffreestanding -f
 LD = ld
 NASM = nasm
 
+OS_IMG = OS.img
+
 nicos.bin: boot/boot_sector.bin kernel.bin
 	cat $^ > $@
 
@@ -18,16 +20,11 @@ kernel.bin: $(OBJ)
 kernel.elf: $(OBJ)
 	$(LD) -m elf_i386 -o $@ -T script.ld $^
 
-create_fat_disk:
-ifeq (,$(wildcard ./DRIVE.img))
-	dd if=/dev/zero of=DRIVE.img bs=1k count=100000
-endif
+run: nicos.bin
+	qemu-system-i386 -m 1G -fda $<
 
-run: nicos.bin create_fat_disk
-	qemu-system-i386 -m 1G -drive file=DRIVE.img,if=ide -fda $<
-
-debug: nicos.bin kernel.elf create_fat_disk
-	qemu-system-i386 -m 1G -drive file=DRIVE.img,if=ide -s -S -fda $< &
+debug: nicos.bin kernel.elf
+	qemu-system-i386 -m 1G -s -S -fda $< &
 	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
 
 %.o: %.c $(HEADERS)
