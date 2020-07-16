@@ -26,6 +26,9 @@ endif
 	qemu-system-i386 -m 1G -drive file=DRIVE.img,if=ide -fda $<
 
 debug: nicos.bin kernel.elf
+ifeq (,$(wildcard ./DRIVE.img))
+	dd if=/dev/zero of=DRIVE.img bs=1k count=100000
+endif
 	qemu-system-i386 -m 1G -drive file=DRIVE.img,if=ide -s -S -fda $< &
 	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
 
