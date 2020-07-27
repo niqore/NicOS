@@ -162,6 +162,11 @@ sudo mount /dev/loop0 /mnt
 sudo grub-install --root-directory=/mnt --no-floppy --recheck --force /dev/loop0
 ```
 
+Pour copier le fichier de configuratiion de grub
+```
+mcopy -i OS.img grub/grub.cfg ::/boot/grub
+```
+
 Pour copier l'OS
 ```
 mcopy -i OS.img nicos.bin ::/boot
