@@ -1,7 +1,7 @@
 C_SOURCES_32 = $(shell find . -name "*.c")
 C_SOURCES_16 = $(shell find . -name "*.c16")
 HEADERS = $(shell find . -name "*.h")
-OBJ = $(C_SOURCES_32:.c=.o cpu/interrupts/interrupt.o kernel/switch_pm.o kernel/memory_map.o) $(C_SOURCES_16:.c16=.o)
+OBJ = $(C_SOURCES_32:.c=.o cpu/interrupts/interrupt.o kernel/memory_map.o kernel/multiboot2.o) $(C_SOURCES_16:.c16=.o)
 
 CC = gcc
 GDB = gdb
@@ -11,19 +11,16 @@ NASM = nasm
 
 OS_IMG = OS.img
 
-nicos.bin: boot/boot_sector.bin kernel.bin
-	cat $^ > $@
+nicos.bin: $(OBJ)
+	$(LD) -m elf_i386 -s -o $@ -T script.ld $^
 
-kernel.bin: $(OBJ)
-	$(LD) -m elf_i386 -s -o $@ -T script.ld $^ --oformat binary
-
-kernel.elf: $(OBJ)
+nicos.elf: $(OBJ)
 	$(LD) -m elf_i386 -o $@ -T script.ld $^
 
 run: nicos.bin
 	qemu-system-i386 -m 1G -fda $<
 
-debug: nicos.bin kernel.elf
+debug: nicos.bin nicos.elf
 	qemu-system-i386 -m 1G -s -S -fda $< &
 	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
 

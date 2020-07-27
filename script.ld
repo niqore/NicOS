@@ -1,26 +1,24 @@
+ENTRY(main)
+
 SECTIONS
 {
-    . = 0x1000;
-    .start : 
-    {
-        *(.start)
-    }
-
-	.text : ALIGN(0x1000) {
-		_TEXT_START_ = .;
-		*(.text)
-		_TEXT_END_ = .;
+	. = 1M;
+	.text :
+	{
+		*(.multiboot);
+		*(.rodata);
+		*(.text);
+		. = ALIGN(4K);
 	}
-
-	.data : ALIGN(0x1000) {
-		_DATA_START_ = .;
-    	*(.data)
-		_DATA_END_ = .;
-  	}
-
-  	.bss : ALIGN(0x1000) {
-		_BSS_START_ = .;
-    	*(.bss)
-		_BSS_END_ = .;
-  	}
+	.data :
+	{
+		*(.data);
+		. = ALIGN(4K);
+	}
+	.bss :
+	{
+		*(COMMON);
+		*(.bss);
+		. = ALIGN(4K);
+	}
 }
