@@ -1,7 +1,6 @@
 C_SOURCES_32 = $(shell find . -name "*.c")
-C_SOURCES_16 = $(shell find . -name "*.c16")
 HEADERS = $(shell find . -name "*.h")
-OBJ = $(C_SOURCES_32:.c=.o cpu/interrupts/interrupt.o kernel/memory_map.o kernel/multiboot2.o) $(C_SOURCES_16:.c16=.o)
+OBJ = $(C_SOURCES_32:.c=.o cpu/interrupts/interrupt.o kernel/gdt.o kernel/memory_map.o kernel/multiboot2.o) $(C_SOURCES_16:.c16=.o)
 
 CC = gcc
 GDB = gdb
@@ -24,13 +23,10 @@ run: nicos.bin
 debug: nicos.bin nicos.elf
 	mcopy -i $(OS_IMG) -no nicos.bin ::/boot &
 	qemu-system-i386 -m 1G -s -S -hda $(OS_IMG) &
-	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file kernel.elf"
+	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file nicos.elf"
 
 %.o: %.c $(HEADERS)
 	$(CC) $(CFLAGS) -m32 -c $< -o $@
-
-%.o: %.c16 $(HEADERS)
-	$(CC) $(CFLAGS) -m16 -x c -c $< -o $@
 
 %.o: %.asm
 	$(NASM) $< -f elf -o $@
@@ -40,4 +36,4 @@ debug: nicos.bin nicos.elf
 
 clean:
 	rm -rf *.bin *.dis *.o os-image.bin *.elf
-	rm -rf kernel/*.o boot/*.bin drivers/*.o boot/*.o cpu/*.o
+	rm -rf kernel/*.o kernel/*.bin drivers/*.o boot/*.o cpu/*.o libc/*.o
