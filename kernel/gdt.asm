@@ -1,4 +1,4 @@
-[bits 16]
+[bits 32]
 gdt_start: ; Les labels doivent être présent pour calculer la taille et les sauts
  	dd 0x0 ; dd = Define double word (4 octets) (db = define byte 1o, dw = define word 2o)
  	dd 0x0 ; La GDT commence par 8 octets à 0
@@ -46,3 +46,21 @@ gdt_descriptor:
 ; Par exemple, quand on met ds = 0x10 en PM (protected mode), le CPU sait qu'on veut le segment d'offset 0x10 dans la GDT, qui est dans notre cas le segment DATA
 CODE_SEG equ gdt_code - gdt_start
 DATA_SEG equ gdt_data - gdt_start
+
+global set_gdt
+set_gdt:
+	cli
+	lgdt [gdt_descriptor]
+	mov eax, cr0 ; On récupère cr0 pour travailler dessus
+	or eax, 0x1 ; On met le premier bit à 1
+	mov cr0, eax ; On met la nouvelle valeur dans cr0
+	jmp CODE_SEG:init_pm
+
+init_pm:
+	mov ax, DATA_SEG ; On update les registres des segments
+	mov ds, ax
+	mov ss, ax
+	mov es, ax
+	mov fs, ax
+	mov gs, ax
+	ret
