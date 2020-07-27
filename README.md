@@ -151,3 +151,23 @@ Quand un PIC reçoit un signal, il met un bit à 1 qui permet de dire que l'inte
 
 Aujourd'hui, ce sont les APIC qui sont utilisés pour les processeurs multi coeurs. Chaque processeur contient un local APIC et il y a des I/O APIC répartis dans le système par exemple au niveau des chipsets ou bridges PCI. Un I/O APIC possède 24 entrées a une base qui définit ses numéros d'interruption (il génèrera alors des interruptions entre base et base + 23).
 Voir Intel OS Dev.pdf chapitre 10.
+
+## Create OS Fat32 Disk Image
+
+```
+dd if=/dev/zero of=OS.img bs=1k count=100000
+sudo /usr/sbin/mkfs.vfat -F 32 OS.img
+sudo losetup /dev/loop0 OS.img
+sudo mount /dev/loop0 /mnt
+sudo grub-install --root-directory=/mnt --no-floppy --recheck --force /dev/loop0
+```
+
+Pour copier l'OS
+```
+mcopy -i OS.img nicos.bin ::/boot
+```
+
+Pour lancer avec Qemu
+```
+qemu-system-i386 -m 1G -hda OS.img
+```

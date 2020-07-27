@@ -9,9 +9,9 @@ void main_16bit() {
 
 	//mem_map_entries = memory_map((SMAP_entry_t*) MEM_MAP_ADDR);
 
-	extern void do_e820();
+	/*extern void do_e820();
 	do_e820();
 
 	extern void switch_to_pm();
-	switch_to_pm();
+	switch_to_pm();*/
 }
