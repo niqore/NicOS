@@ -1,6 +1,6 @@
 C_SOURCES_32 = $(shell find . -name "*.c")
 HEADERS = $(shell find . -name "*.h")
-OBJ = $(C_SOURCES_32:.c=.o cpu/interrupts/interrupt.o kernel/gdt.o kernel/memory_map.o kernel/multiboot2.o) $(C_SOURCES_16:.c16=.o)
+OBJ = $(C_SOURCES_32:.c=.o cpu/interrupts/interrupt.o kernel/gdt.o kernel/multiboot2.o) $(C_SOURCES_16:.c16=.o)
 
 CC = gcc
 GDB = gdb

@@ -74,11 +74,9 @@ void main() {
 	/* Command Line Interface */
 	init_cli();
 
-	//TODO set esp (stack)
-
-	/*device_count = count_pci_devices();
+	device_count = count_pci_devices();
 	device_list = (generic_pci_device_header_t*) malloc(device_count * sizeof(generic_pci_device_header_t));
-	scan_and_register_pci_devices(device_list);*/
+	scan_and_register_pci_devices(device_list);
 
 	while (1);
 }
