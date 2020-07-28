@@ -2,6 +2,7 @@
 #include "stdlib.h"
 #include "../drivers/screen.h"
 #include "string.h"
+#include "stdio.h"
 
 void * memcpy(void *dest, const void *src, int len) {
 
@@ -162,30 +163,30 @@ void print_ram_info(SMAP_entry_t* map, int entries) {
 			continue;
 		}
 		amount += m.LengthL;
-		print_string("0x");
-		print_string(format_number_decimals(itoa(m.BaseH, itoa_buffer, 16), 8));
-		print_string(format_number_decimals(itoa(m.BaseL, itoa_buffer, 16), 8));
-		print_string(" -> 0x");
-		print_string(format_number_decimals(itoa(m.BaseH + m.LengthH, itoa_buffer, 16), 8));
-		print_string(format_number_decimals(itoa(m.BaseL + m.LengthL, itoa_buffer, 16), 8));
-		print_string("; Type = ");
-		print_string(itoa(m.Type, itoa_buffer, 16));
+		printf("0x");
+		printf(format_number_decimals(itoa(m.BaseH, itoa_buffer, 16), 8));
+		printf(format_number_decimals(itoa(m.BaseL, itoa_buffer, 16), 8));
+		printf(" -> 0x");
+		printf(format_number_decimals(itoa(m.BaseH + m.LengthH, itoa_buffer, 16), 8));
+		printf(format_number_decimals(itoa(m.BaseL + m.LengthL, itoa_buffer, 16), 8));
+		printf("; Type = ");
+		printf(itoa(m.Type, itoa_buffer, 16));
 		if (m.Type == 1) {
-			print_string(" (Usable)");
+			printf(" (Usable)");
 		}
 		else if (m.Type == 2) {
-			print_string(" (Reserved)");
+			printf(" (Reserved)");
 		}
 		else {
-			print_string(" (Undefined)");
+			printf(" (Undefined)");
 		}
-		print_string("; ACPI = ");
-		print_string(itoa(m.ACPI, itoa_buffer, 16));
+		printf("; ACPI = ");
+		printf(itoa(m.ACPI, itoa_buffer, 16));
 		print_char('\n');
 	}
-	print_string("Total size: ");
-	print_string(itoa(amount / 1000000, itoa_buffer, 10));
-	print_string(" MB (");
-	print_string(itoa(amount, itoa_buffer, 10));
-	print_string(" B)\n");
+	printf("Total size: ");
+	printf(itoa(amount / 1000000, itoa_buffer, 10));
+	printf(" MB (");
+	printf(itoa(amount, itoa_buffer, 10));
+	printf(" B)\n");
 }

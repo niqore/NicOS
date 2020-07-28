@@ -11,7 +11,38 @@ int get_offset_row(int offset);
 int get_offset_col(int offset);
 int handle_scrolling(int offset);
 
-void print_string_at(char * str, int col, int row, char attribute) {
+int print_char_at(char c, int col, int row, char attribute) {
+    
+    unsigned char * vidmem = (unsigned char*) VIDEO_ADDRESS;
+
+    if (!attribute) { // Si attribute = 0, on met blanc sur noir par défaut
+        attribute = WHITE_ON_BLACK;
+    }
+
+    int offset;
+    if (row >= 0 && col >= 0) { // On calcule l'offset ou on trouve le pointeur
+        offset = get_offset(col, row);
+    }
+    else {
+        offset = get_cursor_offset();
+    }
+
+    if (c == '\n') { // Pour une nouvelle ligne, on se place à la fin de la ligne pour passer à la suivante ensuite
+        row = get_offset_row(offset);
+        offset = get_offset(0, row + 1);
+    }
+    else { // Sinon on écrit le caractère
+        vidmem[offset] = c;
+        vidmem[offset + 1] = attribute;
+        offset += 2;
+    }
+
+    offset = handle_scrolling(offset); // On scroll si on est en bas de l'écran
+    set_cursor_offset(offset); // On met à jour le curseur
+    return offset;
+}
+
+/*void print_string_at(char * str, int col, int row, char attribute) {
 
     int offset;
 
@@ -33,41 +64,10 @@ void print_string_at(char * str, int col, int row, char attribute) {
 
 void print_string(char * str) {
 	print_string_at(str, -1, -1, 0);
-}
+}*/
 
 void print_char(char c) {
-	print_char_at(c, -1, -1, 0);
-}
-
-int print_char_at(char c, int col, int row, char attribute) {
-	
-	unsigned char * vidmem = (unsigned char*) VIDEO_ADDRESS;
-
-	if (!attribute) { // Si attribute = 0, on met blanc sur noir par défaut
-		attribute = WHITE_ON_BLACK;
-	}
-
-	int offset;
-	if (row >= 0 && col >= 0) { // On calcule l'offset ou on trouve le pointeur
-		offset = get_offset(col, row);
-	}
-	else {
-		offset = get_cursor_offset();
-	}
-
-	if (c == '\n') { // Pour une nouvelle ligne, on se place à la fin de la ligne pour passer à la suivante ensuite
-        row = get_offset_row(offset);
-        offset = get_offset(0, row + 1);
-	}
-	else { // Sinon on écrit le caractère
-        vidmem[offset] = c;
-        vidmem[offset + 1] = attribute;
-        offset += 2;
-	}
-
-	offset = handle_scrolling(offset); // On scroll si on est en bas de l'écran
-	set_cursor_offset(offset); // On met à jour le curseur
-	return offset;
+    print_char_at(c, -1, -1, 0);
 }
 
 int get_cursor_offset() {

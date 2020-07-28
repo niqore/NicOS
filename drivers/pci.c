@@ -2,6 +2,7 @@
 #include "../cpu/ports.h"
 #include "screen.h"
 #include "../libc/string.h"
+#include "../libc/stdio.h"
 
 const uint32_t PCI_ENABLE_BIT     = 0x80000000;
 const uint32_t PCI_CONFIG_ADDRESS = 0xCF8;
@@ -56,26 +57,12 @@ void scan_and_register_pci_devices(generic_pci_device_header_t* list) {
 }
 
 void print_pci_device_info(generic_pci_device_header_t* device) {
-
-	char buffer[16];
-
-	print_string("Device ID: 0x");
-	print_string(itoa(device->device_id, buffer, 16));
-	print_string("; Vendor ID: 0x");
-	print_string(itoa(device->vendor_id, buffer, 16));
-	print_string("; Class code: 0x");
-	print_string(itoa(device->class_code, buffer, 16));
-	print_string("; Subclass: 0x");
-	print_string(itoa(device->subclass, buffer, 16));
-	print_string("; Prof IF: 0x");
-	print_string(itoa(device->prog_if, buffer, 16));
-	print_string("; Revision ID: 0x");
-	print_string(itoa(device->revision_id, buffer, 16));
+	printf("Device ID: 0x%x; Vendor ID: 0x%x; Class code: 0x%x; Subclass: 0x%x; Prof IF: 0x%x; Revision ID: 0x%x", device->device_id, device->vendor_id, device->class_code, device->subclass, device->prog_if, device->revision_id);
 }
 
 void print_pci_devices_info(generic_pci_device_header_t* list, int count) {
 	for (int i = 0; i < count; ++i) {
 		print_pci_device_info(&list[i]);
-		print_string("\n\n");
+		printf("\n\n");
 	}
 }
