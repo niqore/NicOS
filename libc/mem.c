@@ -60,6 +60,9 @@ void remove_free_block(free_memory_block * free_block) {
 	free_block->previous->next = free_block->next;
 }
 
+/* Memory not allocated to prevent overrding kernel program memory */
+#define KERNEL_MEMORY_SIZE 1024*1024*10
+
 void init_memory_allocator(struct multiboot_tag *tag) {
 
 	free_list = 0;
@@ -72,8 +75,8 @@ void init_memory_allocator(struct multiboot_tag *tag) {
 		if (!mmap->len || !mmap->addr || mmap->type != MULTIBOOT_MEMORY_AVAILABLE) {
 			continue;
 		}
-		free_memory_block * newBlock = (free_memory_block*) (multiboot_uint32_t) mmap->addr;
-		newBlock->size = mmap->len;
+		free_memory_block * newBlock = (free_memory_block*) (multiboot_uint32_t) mmap->addr + KERNEL_MEMORY_SIZE;
+		newBlock->size = mmap->len - KERNEL_MEMORY_SIZE;
 		add_free_block(newBlock);
 	}
 
