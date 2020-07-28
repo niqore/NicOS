@@ -60,17 +60,35 @@ void remove_free_block(free_memory_block * free_block) {
 	free_block->previous->next = free_block->next;
 }
 
-void init_memory_allocator(SMAP_entry_t* map, int entries) {
+void init_memory_allocator(struct multiboot_tag *tag) {
 
 	free_list = 0;
-	for (int i = 0; i < entries; ++i) {
-		SMAP_entry_t m = map[i];
-		if ((!m.LengthH && !m.LengthL) || m.Type != 1 || m.BaseL == 0) {
+	multiboot_memory_map_t *mmap;
+	for (mmap = ((struct multiboot_tag_mmap *) tag)->entries;
+		(multiboot_uint8_t *) mmap < (multiboot_uint8_t *) tag + tag->size;
+		mmap = (multiboot_memory_map_t *) ((unsigned long) mmap + ((struct multiboot_tag_mmap *) tag)->entry_size))
+	{
+		mmap_size++;
+		if (!mmap->len || !mmap->addr || mmap->type != MULTIBOOT_MEMORY_AVAILABLE) {
 			continue;
 		}
-		free_memory_block * newBlock = (free_memory_block*) m.BaseL;
-		newBlock->size = m.LengthL; // Le système est en 32 bits donc on ne devrait pas dépasser 32 bits en taille
+		free_memory_block * newBlock = (free_memory_block*) (multiboot_uint32_t) mmap->addr;
+		newBlock->size = mmap->len;
 		add_free_block(newBlock);
+	}
+
+	memory_map = malloc(sizeof(multiboot_memory_map_t) * mmap_size);
+	if (!memory_map) {
+		printf("Issue with memory. Halting...");
+		__asm__ __volatile__("hlt");
+	}
+	int i = 0;
+	for (mmap = ((struct multiboot_tag_mmap *) tag)->entries;
+		(multiboot_uint8_t *) mmap < (multiboot_uint8_t *) tag + tag->size;
+		mmap = (multiboot_memory_map_t *) ((unsigned long) mmap + ((struct multiboot_tag_mmap *) tag)->entry_size))
+	{
+		memcpy(&memory_map[i], mmap, sizeof(multiboot_memory_map_t));
+		i++;
 	}
 }
 
@@ -152,41 +170,29 @@ void * realloc(void * ptr, unsigned int size) {
 	return newPtr;
 }
 
-void print_ram_info(SMAP_entry_t* map, int entries) {
+void print_ram_info() {
 
 	char itoa_buffer[16];
 	unsigned int amount = 0;
 
-	for (int i = 0; i < entries; ++i) {
-		SMAP_entry_t m = map[i];
-		if (m.BaseL == 0xfffc0000) {
-			continue;
-		}
-		amount += m.LengthL;
+	for (int i = 0; i < mmap_size; ++i) {
+		multiboot_memory_map_t m = memory_map[i];
+		amount += m.len;
 		printf("0x");
-		printf(format_number_decimals(itoa(m.BaseH, itoa_buffer, 16), 8));
-		printf(format_number_decimals(itoa(m.BaseL, itoa_buffer, 16), 8));
+		printf(format_number_decimals(itoa(m.addr, itoa_buffer, 16), 8));
 		printf(" -> 0x");
-		printf(format_number_decimals(itoa(m.BaseH + m.LengthH, itoa_buffer, 16), 8));
-		printf(format_number_decimals(itoa(m.BaseL + m.LengthL, itoa_buffer, 16), 8));
-		printf("; Type = ");
-		printf(itoa(m.Type, itoa_buffer, 16));
-		if (m.Type == 1) {
+		printf(format_number_decimals(itoa(m.addr + m.len, itoa_buffer, 16), 8));
+		printf("; Type = %x", m.type);
+		if (m.type == 1) {
 			printf(" (Usable)");
 		}
-		else if (m.Type == 2) {
+		else if (m.type == 2) {
 			printf(" (Reserved)");
 		}
 		else {
 			printf(" (Undefined)");
 		}
-		printf("; ACPI = ");
-		printf(itoa(m.ACPI, itoa_buffer, 16));
-		print_char('\n');
+		printf("\n");
 	}
-	printf("Total size: ");
-	printf(itoa(amount / 1000000, itoa_buffer, 10));
-	printf(" MB (");
-	printf(itoa(amount, itoa_buffer, 10));
-	printf(" B)\n");
+	printf("Total size: %d MB (%d B)\n", amount / 1000000, amount);
 }

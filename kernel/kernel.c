@@ -5,46 +5,78 @@
 #include "../cpu/interrupts/pic.h"
 #include "cli.h"
 #include "../libc/stdlib.h"
-#include "memory_map.h"
 #include "kernel.h"
 #include "../libc/stdio.h"
 
 void main() {
 
+	/* Retrieve Multiboot values */
 	uint32_t bootloader_magic;
 	asm("\t movl %%eax,%0" : "=r"(bootloader_magic));
 	uint32_t multiboot_info_struct_addr;
 	asm("\t movl %%ebx,%0" : "=r"(multiboot_info_struct_addr));
 
-	//multiboot_info_t * mbi = (multiboot_info_t *) addr;
-
+	/* GDT */
 	extern void set_gdt();
 	set_gdt();
 
+	/* Clear the screen */
 	clear_screen();
 
+	/* Verify multiboot information */
 	if (bootloader_magic != MULTIBOOT2_BOOTLOADER_MAGIC) {
 		printf("Bad multiboot2 magic number. Halting...");
 		__asm__ __volatile__("hlt");
 	}
+	if (multiboot_info_struct_addr & 7) {
+		printf("Unaligned Multiboot Information. Halting...");
+		__asm__ __volatile__("hlt");
+	}
 
-	printf("Bienvenue sur NicOS !\nLe CPU est actuellement en mode 32-bit\n\n");
+	/* Read tags */
+	for (struct multiboot_tag *tag = (struct multiboot_tag *) (multiboot_info_struct_addr + 8);
+       tag->type != MULTIBOOT_TAG_TYPE_END;
+       tag = (struct multiboot_tag *) ((multiboot_uint8_t *) tag 
+                                       + ((tag->size + 7) & ~7)))
+    {
+    	switch (tag->type) {
+			case MULTIBOOT_TAG_TYPE_BOOT_LOADER_NAME:
+				printf("Booted with %s\n", ((struct multiboot_tag_string *) tag)->string);
+				break;
+          	case MULTIBOOT_TAG_TYPE_BOOTDEV:
+          		printf ("Boot device 0x%x,%u,%u\n",
+                  ((struct multiboot_tag_bootdev *) tag)->biosdev,
+                  ((struct multiboot_tag_bootdev *) tag)->slice,
+                  ((struct multiboot_tag_bootdev *) tag)->part);
+          		break;
+        	case MULTIBOOT_TAG_TYPE_MODULE:
+          		printf ("Module at 0x%x-0x%x. Command line %s\n",
+                  ((struct multiboot_tag_module *) tag)->mod_start,
+                  ((struct multiboot_tag_module *) tag)->mod_end,
+                  ((struct multiboot_tag_module *) tag)->cmdline);
+          		break;
+          	case MULTIBOOT_TAG_TYPE_MMAP:
+          		init_memory_allocator(tag);
+          		break;
+        }
+    }
 
+	/* Welcome ! */
+	printf("\nBienvenue sur NicOS !\nLe CPU est actuellement en mode 32-bit\n\n");
+
+	/* Interruptions */
 	isr_install();
-
 	if (apic_available()) {
 		enable_apic();
 	}
-
 	irq_install();
 
+	/* Command Line Interface */
 	init_cli();
-
-	/*init_memory_allocator((SMAP_entry_t*) MEM_MAP_STRUCTS_ADDR, *((uint32_t*) MEM_MAP_ENT_ADDR));
 
 	//TODO set esp (stack)
 
-	device_count = count_pci_devices();
+	/*device_count = count_pci_devices();
 	device_list = (generic_pci_device_header_t*) malloc(device_count * sizeof(generic_pci_device_header_t));
 	scan_and_register_pci_devices(device_list);*/
 

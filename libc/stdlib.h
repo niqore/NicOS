@@ -1,9 +1,9 @@
 #ifndef STDLIB_H
 #define STDLIB_H
 
-#include "../kernel/memory_map.h"
+#include "../kernel/multiboot2.h"
 
-void init_memory_allocator(SMAP_entry_t* map, int entries);
+void init_memory_allocator(struct multiboot_tag *map);
 
 void * memcpy(void *dest, const void *src, int len);
 
@@ -17,6 +17,6 @@ void * calloc(unsigned int size);
 
 void * realloc(void * ptr, unsigned int size);
 
-void print_ram_info(SMAP_entry_t* map, int entries);
+void print_ram_info();
 
 #endif
