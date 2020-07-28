@@ -1,6 +1,6 @@
 #include "isr.h"
 #include "idt.h"
-#include "../../drivers/screen.h"
+#include "../../libc/stdio.h"
 #include "../../drivers/keyboard.h"
 #include "../ports.h"
 #include "../../libc/string.h"
@@ -117,12 +117,7 @@ char *exception_messages[] = {
 
 /* Handler par défaut (affiche le message de l'interruption) */
 void isr_handler(registers_t r) {
-    print_string("received interrupt: ");
-    unsigned char s[3];
-    print_string(itoa(r.int_no, (char*) s, 10));
-    print_string("\n");
-    print_string(exception_messages[r.int_no]);
-    print_string("\n");
+    printf("received interrupt: %d\n%s\n", r.int_no, exception_messages[r.int_no]);
 }
 
 void register_interrupt_handler(uint8_t n, isr_t handler) {

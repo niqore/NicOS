@@ -1,5 +1,6 @@
 #include "cli.h"
 #include "../drivers/screen.h"
+#include "../libc/stdio.h"
 #include "../libc/string.h"
 #include "memory_map.h"
 #include "../libc/stdlib.h"
@@ -36,7 +37,7 @@ int is_altgring() {
 
 
 void print_line_beginning() {
-	print_string("$ ");
+	printf("$ ");
 }
 
 void init_cli() {

@@ -7,6 +7,7 @@
 #include "../libc/stdlib.h"
 #include "memory_map.h"
 #include "kernel.h"
+#include "../libc/stdio.h"
 
 void main() {
 
@@ -23,11 +24,11 @@ void main() {
 	clear_screen();
 
 	if (bootloader_magic != MULTIBOOT2_BOOTLOADER_MAGIC) {
-		print_string("Bad multiboot2 magic number. Halting...");
+		printf("Bad multiboot2 magic number. Halting...");
 		__asm__ __volatile__("hlt");
 	}
 
-	print_string("Bienvenue sur NicOS !\nLe CPU est actuellement en mode 32-bit\n\n");
+	printf("Bienvenue sur NicOS !\nLe CPU est actuellement en mode 32-bit\n\n");
 
 	isr_install();
 
