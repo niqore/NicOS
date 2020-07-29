@@ -139,6 +139,6 @@ void irq_handler(registers_t r) {
 
 void irq_install() {
     asm volatile("sti");
-    init_timer(50);
+    init_timer(1000);
     init_keyboard();
 }
