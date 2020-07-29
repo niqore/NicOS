@@ -3,7 +3,7 @@
 #include "../libc/stdio.h"
 #include "../libc/string.h"
 #include "../libc/stdlib.h"
-#include "kernel.h"
+#include "../drivers/pci.h"
 
 char buffer[512];
 int buffer_pos = 0;
@@ -53,7 +53,7 @@ void execute_buffer() {
 			print_ram_info();
 		}
 		else if (!strcmp(buffer, "lspci")) {
-			print_pci_devices_info(device_list, device_count);
+			print_pci_devices_info();
 		}
 	}
 

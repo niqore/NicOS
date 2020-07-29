@@ -5,8 +5,9 @@
 #include "../cpu/interrupts/pic.h"
 #include "cli.h"
 #include "../libc/stdlib.h"
-#include "kernel.h"
 #include "../libc/stdio.h"
+#include "../drivers/pci.h"
+#include "../drivers/ahci.h"
 
 void main() {
 
@@ -71,12 +72,21 @@ void main() {
 	}
 	irq_install();
 
+	/* Devices and disk */
+	scan_and_register_pci_devices();
+	ahci_pci_header* ahci_disk = (ahci_pci_header*) get_ahci_disk();
+	if (!ahci_disk) {
+		printf("AHCI Disk not found. Halting...");
+		__asm__ __volatile__("hlt");
+	}
+	register_ahci_disk(ahci_disk);
+
+	// 1 sector = 512 bytes
+	/*uint16_t* buff = (uint16_t*) malloc(sizeof(uint16_t)*512);
+	ahci_read(0, 0, 0, 1, buff);*/
+
 	/* Command Line Interface */
 	init_cli();
-
-	device_count = count_pci_devices();
-	device_list = (generic_pci_device_header_t*) malloc(device_count * sizeof(generic_pci_device_header_t));
-	scan_and_register_pci_devices(device_list);
 
 	while (1);
 }
