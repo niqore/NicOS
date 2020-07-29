@@ -3,6 +3,7 @@
 #include "screen.h"
 #include "../libc/string.h"
 #include "../libc/stdio.h"
+#include "../libc/stdlib.h"
 
 const uint32_t PCI_ENABLE_BIT     = 0x80000000;
 const uint32_t PCI_CONFIG_ADDRESS = 0xCF8;
@@ -35,11 +36,14 @@ int count_pci_devices() {
 	return count;
 }
 
-void scan_and_register_pci_devices(generic_pci_device_header_t* list) {
+void scan_and_register_pci_devices() {
 
 	uint8_t bus, device, func;
 	uint32_t data;
 	int index = 0;
+
+	device_count = count_pci_devices();
+	device_list = (generic_pci_device_header_t*) malloc(device_count * sizeof(generic_pci_device_header_t));
 
 	for(bus = 0; bus != 0xff; bus++) {
 		for(device = 0; device < 32; device++) {
@@ -47,7 +51,7 @@ void scan_and_register_pci_devices(generic_pci_device_header_t* list) {
 				data = r_pci_32(bus, device, func, 0);
 				if(data != 0xffffffff) {
 					for (int i = 0; i < 18; ++i) {
-						((uint32_t*) &list[index])[i] = r_pci_32(bus, device, func, i);
+						((uint32_t*) &device_list[index])[i] = r_pci_32(bus, device, func, i);
 					}
 					index++;
 				}
@@ -210,9 +214,18 @@ void print_pci_device_info(generic_pci_device_header_t* device) {
 	printf("DID: 0x%x; VID: 0x%x; Class: 0x%x; Subclass: 0x%x; Prof IF: 0x%x\n> %s", device->device_id, device->vendor_id, device->class_code, device->subclass, device->prog_if, get_device_description(device));
 }
 
-void print_pci_devices_info(generic_pci_device_header_t* list, int count) {
-	for (int i = 0; i < count; ++i) {
-		print_pci_device_info(&list[i]);
+void print_pci_devices_info() {
+	for (int i = 0; i < device_count; ++i) {
+		print_pci_device_info(&device_list[i]);
 		printf("\n");
 	}
+}
+
+type00_pci_device_header_t* get_ahci_disk() {
+	for (int i = 0; i < device_count; ++i) {
+		if (device_list[i].class_code == 0x01 && device_list[i].subclass == 0x06 && device_list[i].prog_if == 0x01) {
+			return (type00_pci_device_header_t*) &device_list[i];
+		}
+	}
+	return 0;
 }

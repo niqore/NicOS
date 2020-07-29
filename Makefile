@@ -18,11 +18,11 @@ nicos.elf: $(OBJ)
 
 run: nicos.bin
 	mcopy -i $(OS_IMG) -no nicos.bin ::/boot &
-	qemu-system-i386 -m 1G -hda $(OS_IMG)
+	qemu-system-i386 -m 1G -drive id=disk,file=$(OS_IMG),if=none -device ahci,id=ahci -device ide-drive,drive=disk,bus=ahci.0
 
 debug: nicos.bin nicos.elf
 	mcopy -i $(OS_IMG) -no nicos.bin ::/boot &
-	qemu-system-i386 -m 1G -s -S -hda $(OS_IMG) &
+	qemu-system-i386 -m 1G -s -S -drive id=disk,file=$(OS_IMG),if=none -device ahci,id=ahci -device ide-drive,drive=disk,bus=ahci.0 &
 	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file nicos.elf"
 
 %.o: %.c $(HEADERS)
@@ -36,4 +36,4 @@ debug: nicos.bin nicos.elf
 
 clean:
 	rm -rf *.bin *.dis *.o os-image.bin *.elf
-	rm -rf kernel/*.o kernel/*.bin drivers/*.o boot/*.o cpu/*.o libc/*.o
+	rm -rf kernel/*.o kernel/*.bin drivers/*.o boot/*.o cpu/*.o cpu/interrupts/*.o libc/*.o

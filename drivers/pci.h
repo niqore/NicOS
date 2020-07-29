@@ -203,10 +203,13 @@ typedef struct type02_pci_device_header {
 	uint32_t bit16_PC_legacy_base_addr;
 }__attribute__((packed)) type02_pci_device_header_t;
 
-int count_pci_devices();
+void scan_and_register_pci_devices();
 
-void scan_and_register_pci_devices(generic_pci_device_header_t*);
+void print_pci_devices_info();
 
-void print_pci_devices_info(generic_pci_device_header_t* list, int count);
+type00_pci_device_header_t* get_ahci_disk();
+
+generic_pci_device_header_t* device_list;
+int device_count;
 
 #endif
