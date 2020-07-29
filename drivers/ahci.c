@@ -46,7 +46,7 @@ int ahci_read(int port_num, uint32_t startl, uint32_t starth, uint32_t count, ui
  
 	// 8K bytes (16 sectors) per PRDT
 	int i = 0;
-	for (int i = 0; i < cmd_header->prdtl - 1; i++) {
+	for (i = 0; i < cmd_header->prdtl - 1; i++) {
 		cmdtbl->prdt_entry[i].dba = (uint32_t) buf;
 		cmdtbl->prdt_entry[i].dbc = 8*1024-1; // 8K bytes (this value should always be set to 1 less than the actual value)
 		cmdtbl->prdt_entry[i].i = 1;
