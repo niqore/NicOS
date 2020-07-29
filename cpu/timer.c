@@ -2,6 +2,7 @@
 #include "../drivers/screen.h"
 #include "interrupts/isr.h"
 #include "ports.h"
+#include "../libc/stdio.h"
 
 uint32_t tick = 0;
 
@@ -9,12 +10,6 @@ static void timer_callback(registers_t regs) {
 
     regs = regs;
     tick++;
-    /*print_string("Tick: ");
-    
-    unsigned char tick_ascii[256];
-    itoa(tick, tick_ascii, 256, 10);
-    print_string((char *) tick_ascii);
-    print_char('\n');*/
 }
 
 void init_timer(uint32_t freq) {
@@ -31,4 +26,9 @@ void init_timer(uint32_t freq) {
     port_byte_out(0x43, 0x36); /* Port de commande */
     port_byte_out(0x40, low);
     port_byte_out(0x40, high);
+}
+
+void sleep(uint32_t ms) {
+    uint32_t lim = tick + ms;
+    while (tick < lim);
 }
