@@ -8,6 +8,7 @@
 #include "../libc/stdio.h"
 #include "../drivers/pci.h"
 #include "../drivers/ahci.h"
+#include "../filesystem/fat32.h"
 
 void main() {
 
@@ -81,9 +82,8 @@ void main() {
 	}
 	register_ahci_disk(ahci_disk);
 
-	// 1 sector = 512 bytes
-	/*uint16_t* buff = (uint16_t*) malloc(sizeof(uint16_t)*512);
-	ahci_read(0, 0, 0, 1, buff);*/
+	/* Filesystem initialization */
+	init_fat32_filesystem();
 
 	/* Command Line Interface */
 	init_cli();
