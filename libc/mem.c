@@ -58,6 +58,10 @@ void remove_free_block(free_memory_block * free_block) {
 
 	free_block->next->previous = free_block->previous;
 	free_block->previous->next = free_block->next;
+
+	if (free_block == free_list) {
+		free_list = free_block->next;
+	}
 }
 
 /* Memory not allocated to prevent overrding kernel program memory */

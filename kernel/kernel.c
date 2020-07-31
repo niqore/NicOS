@@ -9,6 +9,7 @@
 #include "../drivers/pci.h"
 #include "../drivers/ahci.h"
 #include "../filesystem/fat32.h"
+#include "../filesystem/filesystem.h"
 
 void main() {
 
@@ -87,6 +88,13 @@ void main() {
 
 	/* Command Line Interface */
 	init_cli();
+
+	FILE_PATH* p = get_file_path("/test//bin/./haha", "../salut/test2//../..");
+	while (p != 0) {
+		printf("%s/", p->name);
+		p = p->next;
+	}
+	printf("\n");
 
 	while (1);
 }

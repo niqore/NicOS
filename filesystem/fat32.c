@@ -3,6 +3,7 @@
 #include "../libc/stdio.h"
 #include "../libc/stdlib.h"
 #include "../libc/string.h"
+#include "filesystem.h"
 
 void init_fat32_filesystem() {
 
