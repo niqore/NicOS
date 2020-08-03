@@ -3,7 +3,6 @@
 #include "../libc/stdio.h"
 #include "../libc/stdlib.h"
 #include "../libc/string.h"
-#include "filesystem.h"
 
 void init_fat32_filesystem() {
 
@@ -13,37 +12,16 @@ void init_fat32_filesystem() {
 		printf("Error while reading disk. Halting...");
 		__asm__ __volatile__("hlt");
 	}
-	filesystem_header = (struct fat32_header*) malloc(sizeof(struct fat32_header));
+	filesystem_header = (struct fat32_header*) ((char*) buff + 3);
 
-	//Il faut tout redefinir car la mémoire n'est pas alignée
-	unsigned char* tmp = (unsigned char*) buff;
-	memcpy(filesystem_header->oem_name, tmp + 0x03, 8);
-	memcpy(&filesystem_header->bytes_per_sector, tmp + 0x0B, sizeof(uint16_t));
-	memcpy(&filesystem_header->sectors_per_cluster, tmp + 0x0D, sizeof(uint8_t));
-	memcpy(&filesystem_header->reserved_sectors, tmp + 0x0E, sizeof(uint16_t));
-	memcpy(&filesystem_header->fat_number, tmp + 0x10, sizeof(uint8_t));
-	memcpy(&filesystem_header->root_dir_entries, tmp + 0x11, sizeof(uint16_t));
-	memcpy(&filesystem_header->logical_sectors_total, tmp + 0x13, sizeof(uint16_t));
-	memcpy(&filesystem_header->media_descriptor, tmp + 0x15, sizeof(uint8_t));
-	memcpy(&filesystem_header->logical_sectors_per_fat, tmp + 0x16, sizeof(uint16_t));
-	memcpy(&filesystem_header->sectors_per_track, tmp + 0x18, sizeof(uint16_t));
-	memcpy(&filesystem_header->heads_number, tmp + 0x1A, sizeof(uint16_t));
-	memcpy(&filesystem_header->hidden_sectors, tmp + 0x1C, sizeof(uint32_t));
-	memcpy(&filesystem_header->large_sector_count, tmp + 0x20, sizeof(uint32_t));
-	memcpy(&filesystem_header->sectors_per_fat, tmp + 0x24, sizeof(uint32_t));
-	memcpy(&filesystem_header->flags, tmp + 0x28, sizeof(uint16_t));
-	memcpy(&filesystem_header->fat_version, tmp + 0x2A, sizeof(uint16_t));
-	memcpy(&filesystem_header->root_dir_cluster, tmp + 0x2C, sizeof(uint32_t));
-	memcpy(&filesystem_header->fs_info_sector, tmp + 0x30, sizeof(uint16_t));
-	memcpy(&filesystem_header->backup_boot_sector, tmp + 0x32, sizeof(uint16_t));
-	memcpy(filesystem_header->reserved, tmp + 0x34, 12);
-	memcpy(&filesystem_header->drive_number, tmp + 0x40, sizeof(uint8_t));
-	memcpy(&filesystem_header->windows_nt_flag, tmp + 0x41, sizeof(uint8_t));
-	memcpy(&filesystem_header->signature, tmp + 0x42, sizeof(uint8_t));
-	memcpy(&filesystem_header->volume_id_serial, tmp + 0x43, sizeof(uint32_t));
-	memcpy(filesystem_header->volume_label, tmp + 0x47, 11);
-	memcpy(filesystem_header->system_identifier, tmp + 0x52, 11);
-
+	if (filesystem_header->bytes_per_sector != 512) {
+		printf("This system doesn't support FAT with bytes per sectors not equals to 512. Halting...");
+		__asm__ __volatile__("hlt");
+	}
+	if (filesystem_header->sectors_per_cluster != 1) {
+		printf("This system doesn't support FAT sectors per cluster not equals to 1. Halting...");
+		__asm__ __volatile__("hlt");
+	}
 	if (filesystem_header->signature != 0x28 && filesystem_header->signature != 0x29) {
 		printf("Invalid FAT signature. Halting...");
 		__asm__ __volatile__("hlt");
@@ -54,6 +32,183 @@ void init_fat32_filesystem() {
 		printf("Invalid FAT system identifier. Halting...");
 		__asm__ __volatile__("hlt");
 	}
+}
 
+uint32_t get_next_sector(int sector) {
+	uint32_t fat_addr = filesystem_header->reserved_sectors * 512 + sector * 4;
+	uint16_t* buff = (uint16_t*) malloc(512);
+	int res = ahci_read(0, fat_addr / 512, 0, 1, buff);
+	if (!res) {
+		printf("Error while reading disk. Halting...");
+		__asm__ __volatile__("hlt");
+	}
+	uint32_t next_sector = *((uint32_t*) ((char*) buff + fat_addr % 512));
 	free(buff);
+	return next_sector & 0x00ffffff;
+}
+
+int get_sector_shifted(int sector) {
+	return filesystem_header->reserved_sectors + filesystem_header->fat_number * filesystem_header->sectors_per_fat + sector - 2;
+}
+
+int get_root_sector() {
+	return filesystem_header->root_dir_cluster;
+}
+
+int is_vfat_entry(FILE_ENTRY* entry) {
+	return entry->attribute == 0xF;
+}
+
+FILE_ENTRY* get_dir_entries(int sector) {
+	uint16_t* buff = (uint16_t*) malloc(filesystem_header->bytes_per_sector);
+	int res = ahci_read(0, get_sector_shifted(sector), 0, 1, buff);
+	if (!res) {
+		printf("Error while reading disk. Halting...");
+		__asm__ __volatile__("hlt");
+	}
+	return (FILE_ENTRY*) buff;
+}
+
+FILE_ENTRY* get_root_dir_entries() {
+	return get_dir_entries(get_root_sector());
+}
+
+FILE_ENTRY* get_file_entry(FILE_PATH* path) {
+
+	FILE_ENTRY* dir = get_root_dir_entries();
+	uint32_t curr_sector = get_root_sector();
+	FILE_PATH* cur_path = path;
+	int skip_vfat = 0;
+	int in_vfat = 0;
+	int i = 0;
+	while (dir != 0 && cur_path != 0) {
+		int name_length = strlen(cur_path->name);
+		int extension_length = 0;
+		int j;
+		for (j = name_length - 1; j != name_length - 5; --j) {
+			if (cur_path->name[j] == '.') {
+				extension_length = name_length - 1 - j;
+				break;
+			}
+		}
+		for (i = 0; i < 16; ++i) {
+			if (is_vfat_entry(dir + i)) {
+				if (skip_vfat) {
+					continue;
+				}
+				VFAT_ENTRY* vfat_ent = (VFAT_ENTRY*) &dir[i];
+				in_vfat = 1;
+				int seq_num = vfat_ent->sequence_number & 0x1F;
+				if (name_length + 13 < seq_num * 13) {
+					goto skip_vfat_entry;
+				}
+				if (name_length + 1 > 13 * (seq_num - 1) + 0 && lower_case(vfat_ent->char1) != lower_case(cur_path->name[13 * (seq_num - 1) + 0])) {
+					goto skip_vfat_entry;
+				}
+				if (name_length + 1 > 13 * (seq_num - 1) + 1 && lower_case(vfat_ent->char2) != lower_case(cur_path->name[13 * (seq_num - 1) + 1])) {
+					goto skip_vfat_entry;
+				}
+				if (name_length + 1 > 13 * (seq_num - 1) + 2 && lower_case(vfat_ent->char3) != lower_case(cur_path->name[13 * (seq_num - 1) + 2])) {
+					goto skip_vfat_entry;
+				}
+				if (name_length + 1 > 13 * (seq_num - 1) + 3 && lower_case(vfat_ent->char4) != lower_case(cur_path->name[13 * (seq_num - 1) + 3])) {
+					goto skip_vfat_entry;
+				}
+				if (name_length + 1 > 13 * (seq_num - 1) + 4 && lower_case(vfat_ent->char5) != lower_case(cur_path->name[13 * (seq_num - 1) + 4])) {
+					goto skip_vfat_entry;
+				}
+				if (name_length + 1 > 13 * (seq_num - 1) + 5 && lower_case(vfat_ent->char6) != lower_case(cur_path->name[13 * (seq_num - 1) + 5])) {
+					goto skip_vfat_entry;
+				}
+				if (name_length + 1 > 13 * (seq_num - 1) + 6 && lower_case(vfat_ent->char7) != lower_case(cur_path->name[13 * (seq_num - 1) + 6])) {
+					goto skip_vfat_entry;
+				}
+				if (name_length + 1 > 13 * (seq_num - 1) + 7 && lower_case(vfat_ent->char8) != lower_case(cur_path->name[13 * (seq_num - 1) + 7])) {
+					goto skip_vfat_entry;
+				}
+				if (name_length + 1 > 13 * (seq_num - 1) + 8 && lower_case(vfat_ent->char9) != lower_case(cur_path->name[13 * (seq_num - 1) + 8])) {
+					goto skip_vfat_entry;
+				}
+				if (name_length + 1 > 13 * (seq_num - 1) + 9 && lower_case(vfat_ent->char10) != lower_case(cur_path->name[13 * (seq_num - 1) + 9])) {
+					goto skip_vfat_entry;
+				}
+				if (name_length + 1 > 13 * (seq_num - 1) + 10 && lower_case(vfat_ent->char11) != lower_case(cur_path->name[13 * (seq_num - 1) + 10])) {
+					goto skip_vfat_entry;
+				}
+				if (name_length + 1 > 13 * (seq_num - 1) + 11 && lower_case(vfat_ent->char12) != lower_case(cur_path->name[13 * (seq_num - 1) + 11])) {
+					goto skip_vfat_entry;
+				}
+				if (name_length + 1 > 13 * (seq_num - 1) + 12 && lower_case(vfat_ent->char13) != lower_case(cur_path->name[13 * (seq_num - 1) + 12])) {
+					goto skip_vfat_entry;
+				}
+				continue;
+				skip_vfat_entry:
+					skip_vfat = 1;
+					continue;
+			}
+			else {
+				if (skip_vfat) { // L'entrée vfat est invalide, on passe à l'entrée suivante
+					in_vfat = 0;
+					skip_vfat = 0;
+					continue;
+				}
+				else if (in_vfat) {
+					in_vfat = 0;
+					break; // On a validé le nom vfat
+				}
+				else {
+					in_vfat = 0;
+					if (extension_length != 0) {
+						for (j = name_length - extension_length; j < name_length; ++j) {
+							if (lower_case(cur_path->name[j]) != lower_case(dir[i].extension[j - (name_length - extension_length)])) {
+								break;
+							}
+						}
+						if (j != name_length) {
+							continue;
+						}
+					}
+					for (j = 0; j < name_length - (extension_length != 0 ? extension_length + 1 : 0); ++j) {
+						if (lower_case(cur_path->name[j]) != lower_case(dir[i].short_name[j])) {
+							break;
+						}
+					}
+					if (j != name_length - (extension_length != 0 ? extension_length + 1 : 0)) {
+						continue;
+					}
+					break; // Le nom dans l'entrée est validé
+				}
+			}
+		}
+		if (i != 16) {
+			if (cur_path->next == 0) {
+				break;
+			}
+			FILE_ENTRY* tmp_dir = dir;
+			curr_sector = dir[i].cluster_low_bytes;
+			dir = get_dir_entries(curr_sector);
+			free(tmp_dir);
+			cur_path = cur_path->next;
+		}
+		else {
+			uint32_t next_sect = get_next_sector(curr_sector);
+			if (next_sect == 0x00ffffff) {
+				free(dir);
+				dir = 0;
+			}
+			else {
+				FILE_ENTRY* tmp_dir = dir;
+				dir = get_dir_entries(next_sect);
+				curr_sector = next_sect;
+				free(tmp_dir);
+			}
+		}
+	}
+	FILE_ENTRY* ret = 0;
+	if (dir != 0) {
+		ret = (FILE_ENTRY*) malloc(sizeof(FILE_ENTRY));
+		memcpy(ret, dir + i, sizeof(FILE_ENTRY));
+		free(dir);
+	}
+	return ret;
 }
