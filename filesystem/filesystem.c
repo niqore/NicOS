@@ -2,10 +2,38 @@
 #include "../libc/stdlib.h"
 #include "../libc/string.h"
 
+FILE_PATH* copy_file_path(FILE_PATH* path) {
+
+	if (path == 0)
+		return 0;
+
+	FILE_PATH* first = 0;
+	FILE_PATH* cur_path = 0;
+
+	while (path != 0) {
+		FILE_PATH* new_path_tmp = (FILE_PATH*) malloc(sizeof(FILE_PATH));
+		memcpy(new_path_tmp, path, sizeof(FILE_PATH));
+		int name_length = strlen(path->name);
+		new_path_tmp->name = (char*) malloc((name_length + 1)*sizeof(char));
+		memcpy(new_path_tmp->name, path->name, name_length + 1);
+		if (first == 0) {
+			first = new_path_tmp;
+		}
+		new_path_tmp->previous = cur_path;
+		if (cur_path != 0) {
+			cur_path->next = new_path_tmp;
+		}
+		cur_path = new_path_tmp;
+		path = path->next;
+	}
+
+	return first;
+}
+
 FILE_PATH* filename_to_path(char* dir, FILE_PATH* base_path) {
 	char* cd = dir;
-	FILE_PATH* first = base_path;
-	FILE_PATH* cur_path = base_path;
+	FILE_PATH* first = copy_file_path(base_path);
+	FILE_PATH* cur_path = first;
 	while (cur_path != 0 && cur_path->next != 0) {
 		cur_path = cur_path->next;
 	}
@@ -71,11 +99,11 @@ FILE_PATH* combine_paths(FILE_PATH* path1, FILE_PATH* path2) {
 
 void free_path(FILE_PATH* path) {
 	if (path == 0) return;
-	FILE_PATH* next = path->next;
-	while (path != 0) {
-		free(path->name);
-		free(path);
-		path = next;
-		next = path->next;
+	FILE_PATH* next = path;
+	while (next != 0) {
+		FILE_PATH* n = next->next;
+		free(next->name);
+		free(next);
+		next = n;
 	}
 }

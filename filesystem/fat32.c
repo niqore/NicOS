@@ -75,6 +75,21 @@ FILE_ENTRY* get_root_dir_entries() {
 
 FILE_ENTRY* get_file_entry(FILE_PATH* path) {
 
+	if (path == 0) {
+		FILE_ENTRY* fentry = (FILE_ENTRY*) malloc(sizeof(FILE_ENTRY));
+		memset(fentry->short_name, ' ', 11);
+		fentry->attribute = FAT32_ATTR_SUBDIR;
+		fentry->ext_attributes = 0;
+		fentry->create_time_ms = 0;
+		fentry->create_date = 0;
+		fentry->last_access_date = 0;
+		fentry->cluster_high_bytes = 0;
+		fentry->modified_time = 0;
+		fentry->modified_date = 0;
+		fentry->cluster_low_bytes = filesystem_header->root_dir_cluster;
+		fentry->file_size = 0;
+		return fentry;
+	}
 	FILE_ENTRY* dir = get_root_dir_entries();
 	uint32_t curr_sector = get_root_sector();
 	FILE_PATH* cur_path = path;
@@ -192,7 +207,7 @@ FILE_ENTRY* get_file_entry(FILE_PATH* path) {
 		}
 		else {
 			uint32_t next_sect = get_next_sector(curr_sector);
-			if (next_sect == 0x00ffffff) {
+			if (next_sect >= 0xffffef) {
 				free(dir);
 				dir = 0;
 			}

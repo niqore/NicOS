@@ -5,6 +5,7 @@
 #include "../libc/stdlib.h"
 #include "../drivers/pci.h"
 #include "../filesystem/filesystem.h"
+#include "../filesystem/fat32.h"
 
 char buffer[512];
 int buffer_pos = 0;
@@ -117,15 +118,24 @@ void execute_buffer() {
 		}
 		else if (!strcmp(buffer, "cd")) {
 			if (argc == 1) {
-				if (argv[0][0] == '/') {
-					current_directory = filename_to_path(argv[0], 0);
+				FILE_PATH* new_path = argv[0][0] == '/' ? filename_to_path(argv[0], 0) : filename_to_path(argv[0], current_directory);
+				FILE_ENTRY* file_entry = get_file_entry(new_path);
+				if (file_entry == 0) {
+					printf("Aucun dossier avec ce nom\n");
+					free_path(new_path);
+				}
+				else if (!(file_entry->attribute & FAT32_ATTR_SUBDIR)) {
+					printf("Ceci n'est pas un dossier\n");
+					free_path(new_path);
 				}
 				else {
-					current_directory = filename_to_path(argv[0], current_directory);
+					free_path(current_directory);
+					current_directory = new_path;
 				}
+				free(file_entry);
 			}
 			else {
-				printf("Correct usage: cd [path]\n");
+				printf("Usage correct: cd [path]\n");
 			}
 		}
 		for (int i = 0; i < argc; ++i) {
