@@ -89,11 +89,5 @@ void main() {
 	/* Command Line Interface */
 	init_cli();
 
-	FILE_PATH* p = get_file_path("/busy_dir/nico17.bin", "");
-	FILE_ENTRY* file_entry = get_file_entry(p);
-	if (file_entry == 0) {
-		printf("File does not exists");
-	}
-
 	while (1);
 }

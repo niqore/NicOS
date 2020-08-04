@@ -9,7 +9,9 @@ typedef struct path {
 	struct path* previous;
 } FILE_PATH;
 
-FILE_PATH* get_file_path(char* current_dir, char* path);
+FILE_PATH* filename_to_path(char* dir, FILE_PATH* base_dir);
+
+FILE_PATH* combine_paths(FILE_PATH* path1, FILE_PATH* path2);
 
 void free_path(FILE_PATH* path);
 

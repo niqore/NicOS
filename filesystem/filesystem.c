@@ -2,11 +2,13 @@
 #include "../libc/stdlib.h"
 #include "../libc/string.h"
 
-FILE_PATH* get_file_path(char* current_dir, char* path) {
-	char* cd = current_dir;
-	FILE_PATH* first = 0;
-	FILE_PATH* cur_path = 0;
-	int cd_len = strlen(current_dir);
+FILE_PATH* filename_to_path(char* dir, FILE_PATH* base_path) {
+	char* cd = dir;
+	FILE_PATH* first = base_path;
+	FILE_PATH* cur_path = base_path;
+	while (cur_path != 0 && cur_path->next != 0) {
+		cur_path = cur_path->next;
+	}
 	int i = 0;
 	while (cd[i]) {
 		if (cd[i] == '/') {
@@ -24,6 +26,13 @@ FILE_PATH* get_file_path(char* current_dir, char* path) {
 				cur_path->previous->next = 0;
 				free_path(cur_path);
 				cur_path = prev_tmp;
+			}
+			else {
+				if (cur_path != 0) {
+					free_path(cur_path);
+				}
+				cur_path = 0;
+				first = 0;
 			}
 			continue;
 		}
@@ -45,12 +54,19 @@ FILE_PATH* get_file_path(char* current_dir, char* path) {
 			cur_path->next = new_path;
 			cur_path = new_path;
 		}
-		if (i == cd_len && cd == current_dir) {
-			cd = path;
-			i = 0;
-		}
 	}
 	return first;
+}
+
+FILE_PATH* combine_paths(FILE_PATH* path1, FILE_PATH* path2) {
+	if (path1 == 0)
+		return path2;
+	FILE_PATH* cur_path = path1;
+	while (cur_path->next != 0) {
+		cur_path = cur_path->next;
+	}
+	cur_path->next = path2;
+	return path1;
 }
 
 void free_path(FILE_PATH* path) {
