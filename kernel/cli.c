@@ -4,9 +4,11 @@
 #include "../libc/string.h"
 #include "../libc/stdlib.h"
 #include "../drivers/pci.h"
+#include "../filesystem/filesystem.h"
 
 char buffer[512];
 int buffer_pos = 0;
+FILE_PATH* current_directory = 0;
 
 /* Touches spéciales */
 int multi_key_down = 0;
@@ -34,8 +36,16 @@ int is_altgring() {
 	return (is_ctrling() && is_alting()) || altgr_down;
 }
 
-
 void print_line_beginning() {
+	printf("/");
+	FILE_PATH* tmp = current_directory;
+	while (tmp != 0) {
+		printf("%s", tmp->name);
+		tmp = tmp->next;
+		if (tmp != 0) {
+			printf("/");
+		}
+	}
 	printf("$ ");
 }
 
@@ -44,16 +54,82 @@ void init_cli() {
 	buffer_pos = 0;
 }
 
+int get_buffer_command_length(char* buff) {
+	int i = 0;
+	while (buff[i] != ' ' && buff[i] != 0) {
+		i++;
+	}
+	return i;
+}
+
+int get_buffer_argc(char* buff) {
+	int i = 0;
+	for (int j = 0; j < 512; ++j) {
+		int is_arg = 0;
+		while (buff[j] != ' ' && buff[j] != 0) {
+			is_arg = 1;
+			++j;
+		}
+		if (is_arg) {
+			i++;
+		}
+	}
+	if (i == 0)
+		return 0;
+	return i - 1;
+}
+
+char** get_buffer_argv(char* buff, int command_length, int argc) {
+	char** argv = (char**) malloc(argc*sizeof(char*));
+	int j = command_length;
+	for (int i = 0; i < argc; ++i) {
+		while (buff[j] == ' ' || buff[j] == 0) {
+			j++;
+		}
+		int length = 0;
+		while (buff[j] != ' ' && buff[j] != 0) {
+			length++;
+			j++;
+		}
+		argv[i] = (char*) malloc((length + 1)*sizeof(char));
+		memcpy(argv[i], buff + j - length, length);
+		argv[i][length] = 0;
+	}
+	return argv;
+}
+
 void execute_buffer() {
 	print_char('\n');
 
-	if (buffer_pos < 512) {
-		buffer[buffer_pos] = '\0';
+	if (buffer_pos < 511) {
+		for (int i = buffer_pos; i < 512; ++i) {
+			buffer[i] = '\0';
+		}
+		int cmd_length = get_buffer_command_length(buffer);
+		buffer[cmd_length] = 0;
+		int argc = get_buffer_argc(buffer);
+		char** argv = get_buffer_argv(buffer, cmd_length, argc);
 		if (!strcmp(buffer, "raminfo")) {
 			print_ram_info();
 		}
 		else if (!strcmp(buffer, "lspci")) {
 			print_pci_devices_info();
+		}
+		else if (!strcmp(buffer, "cd")) {
+			if (argc == 1) {
+				if (argv[0][0] == '/') {
+					current_directory = filename_to_path(argv[0], 0);
+				}
+				else {
+					current_directory = filename_to_path(argv[0], current_directory);
+				}
+			}
+			else {
+				printf("Correct usage: cd [path]\n");
+			}
+		}
+		for (int i = 0; i < argc; ++i) {
+			free(argv[i]);
 		}
 	}
 
