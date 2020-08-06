@@ -110,33 +110,50 @@ void execute_buffer() {
 		buffer[cmd_length] = 0;
 		int argc = get_buffer_argc(buffer);
 		char** argv = get_buffer_argv(buffer, cmd_length, argc);
-		if (!strcmp(buffer, "raminfo")) {
-			print_ram_info();
-		}
-		else if (!strcmp(buffer, "lspci")) {
-			print_pci_devices_info();
-		}
-		else if (!strcmp(buffer, "cd")) {
+		if (!strcmp(buffer, "cd")) {
 			if (argc == 1) {
 				FILE_PATH* new_path = argv[0][0] == '/' ? filename_to_path(argv[0], 0) : filename_to_path(argv[0], current_directory);
 				FILE_ENTRY* file_entry = get_file_entry(new_path);
-				if (file_entry == 0) {
+				if (!file_entry) {
 					printf("Aucun dossier avec ce nom\n");
-					free_path(new_path);
+					if (new_path)
+						free_path(new_path);
 				}
 				else if (!(file_entry->attribute & FAT32_ATTR_SUBDIR)) {
 					printf("Ceci n'est pas un dossier\n");
-					free_path(new_path);
+					if (new_path)
+						free_path(new_path);
 				}
 				else {
-					free_path(current_directory);
+					if (current_directory) {
+						free_path(current_directory);
+					}
 					current_directory = new_path;
 				}
-				free(file_entry);
+				if (file_entry) {
+					free(file_entry);
+				}
 			}
 			else {
 				printf("Usage correct: cd [path]\n");
 			}
+		}
+		else if (cmd_length) {
+			FILE_PATH* cmd_path = buffer[0] == '/' ? filename_to_path(buffer, 0) : filename_to_path(buffer, current_directory);
+			FILE_ENTRY* cmd_file_entry = get_file_entry(cmd_path);
+			if (!cmd_file_entry) {
+				printf("Commande inconnue\n");
+			}
+			else if (cmd_file_entry->attribute & FAT32_ATTR_SUBDIR || cmd_file_entry->file_size == 0) {
+				printf("Ceci n'est pas un fichier\n");
+			}
+			else {
+				//Read ELF
+			}
+			if (cmd_path)
+				free_path(cmd_path);
+			if (cmd_file_entry)
+				free(cmd_file_entry);
 		}
 		for (int i = 0; i < argc; ++i) {
 			free(argv[i]);
