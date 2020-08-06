@@ -3,6 +3,7 @@
 #include "../drivers/screen.h"
 #include "string.h"
 #include "stdio.h"
+#include "../cpu/types.h"
 
 void * memcpy(void *dest, const void *src, int len) {
 
@@ -12,6 +13,14 @@ void * memcpy(void *dest, const void *src, int len) {
 		*d++ = *s++;
 	}
 	return dest;
+}
+
+unsigned int free_memory_block_checksum(free_memory_block* free_block) {
+	return (uint32_t) free_block->size ^ (uint32_t) free_block->next ^ (uint32_t) free_block->previous;
+}
+
+unsigned int allocated_memory_block_checksum(allocated_memory_block* allocated) {
+	return -allocated->size;
 }
 
 void* find_first_free_available(unsigned int size) {
@@ -46,6 +55,9 @@ void add_free_block(free_memory_block * free_block) {
 	free_block->previous = free_list->previous;
 	free_block->previous->next = free_block;
 	free_list->previous = free_block;
+	free_block->checksum = free_memory_block_checksum(free_block);
+	free_block->next->checksum = free_memory_block_checksum(free_block->next);
+	free_block->previous->checksum = free_memory_block_checksum(free_block->previous);
 	free_list = free_block;
 }
 
@@ -101,8 +113,15 @@ void init_memory_allocator(struct multiboot_tag *tag) {
 
 void* malloc(unsigned int size) {
 
+	if (size == 0) return 0;
+
 	/* On trouve le premier block libre avec la taille souhaitée */
 	free_memory_block * free_use = find_first_free_available(size + sizeof(allocated_memory_block));
+
+	if (free_memory_block_checksum(free_use) != free_use->checksum) {
+		printf("Error: Invalid free block checksum. Cannot malloc !\n", free_memory_block_checksum(free_use), free_use->checksum);
+		return 0;
+	}
 
 	if (free_use != 0) {
 
@@ -114,6 +133,7 @@ void* malloc(unsigned int size) {
 		/* On alloue le nouveau bloc */
 		allocated_memory_block * allocated = (allocated_memory_block *) free_use;
 		allocated->size = size;
+		allocated->checksum = allocated_memory_block_checksum(allocated);
 
 		/*
 		On teste si dans le nouvel espace restant, il est possible de mettre le header au complet pour ne pas empieter sur d'autres zones mémoires
@@ -130,18 +150,25 @@ void* malloc(unsigned int size) {
 		return (char*) allocated + sizeof(allocated_memory_block);
 	}
 	else {
+		printf("Error: No free block found\n");
 		return 0;
 	}
 }
 
 void free(void* ptr) {
 
+	if (ptr == 0) return;
+
 	/* On récupère le header du bloc alloué */
 	allocated_memory_block * allocated = (allocated_memory_block *) ((char*) ptr - sizeof(allocated_memory_block));
+	if (allocated->checksum != allocated_memory_block_checksum(allocated)) {
+		printf("Error: Invalid allocated block checksum. Cannot free !\n");
+		return;
+	}
 	unsigned int size = allocated->size;
 
 	/* On ajoute un bloc libre si on a la place */
-	if (sizeof(free_memory_block) - size - sizeof(allocated_memory_block) > 0) {
+	if (size + sizeof(allocated_memory_block) - sizeof(free_memory_block) > 0) {
 		free_memory_block * newBlock = (free_memory_block *) allocated;
 		newBlock->size = size + sizeof(allocated_memory_block);
 		add_free_block(newBlock);
