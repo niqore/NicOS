@@ -87,22 +87,8 @@ void main() {
 	init_fat32_filesystem();
 
 	/* Test malloc free */
-	for (int i = 2; i < 200; ++i)
-		malloc(i);
-	for (int i = 200; i != 2; --i)
-		malloc(i);
-	for (int i = 2; i < 200; ++i) {
-		free(malloc(i));
-		free(malloc(i-1));
-		malloc(i);
-		free(malloc(i+1));
-	}
-	for (int i = 200; i != 2; --i) {
-		free(malloc(i));
-		free(malloc(i-1));
-		malloc(i);
-		free(malloc(i+1));
-	}
+	free(malloc(2));
+	free(malloc(3));
 
 	/* Command Line Interface */
 	init_cli();
