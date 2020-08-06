@@ -55,10 +55,10 @@ void add_free_block(free_memory_block * free_block) {
 	free_block->previous = free_list->previous;
 	free_block->previous->next = free_block;
 	free_list->previous = free_block;
-	free_block->checksum = free_memory_block_checksum(free_block);
-	free_block->next->checksum = free_memory_block_checksum(free_block->next);
-	free_block->previous->checksum = free_memory_block_checksum(free_block->previous);
 	free_list = free_block;
+	free_list->checksum = free_memory_block_checksum(free_list);
+	free_list->next->checksum = free_memory_block_checksum(free_list->next);
+	free_list->previous->checksum = free_memory_block_checksum(free_list->previous);
 }
 
 void remove_free_block(free_memory_block * free_block) {
@@ -69,11 +69,15 @@ void remove_free_block(free_memory_block * free_block) {
 	}
 
 	free_block->next->previous = free_block->previous;
+	free_block->next->checksum = free_memory_block_checksum(free_block->next);
 	free_block->previous->next = free_block->next;
+	free_block->previous->checksum = free_memory_block_checksum(free_block->previous);
 
 	if (free_block == free_list) {
 		free_list = free_block->next;
 	}
+
+	free_list->checksum = free_memory_block_checksum(free_list);
 }
 
 /* Memory not allocated to prevent overrding kernel program memory */
@@ -119,7 +123,7 @@ void* malloc(unsigned int size) {
 	free_memory_block * free_use = find_first_free_available(size + sizeof(allocated_memory_block));
 
 	if (free_memory_block_checksum(free_use) != free_use->checksum) {
-		printf("Error: Invalid free block checksum. Cannot malloc !\n", free_memory_block_checksum(free_use), free_use->checksum);
+		printf("Error: Invalid free block checksum %d, %d. Cannot malloc !\n", free_memory_block_checksum(free_use), free_use->checksum);
 		return 0;
 	}
 
@@ -162,15 +166,15 @@ void free(void* ptr) {
 	/* On récupère le header du bloc alloué */
 	allocated_memory_block * allocated = (allocated_memory_block *) ((char*) ptr - sizeof(allocated_memory_block));
 	if (allocated->checksum != allocated_memory_block_checksum(allocated)) {
-		printf("Error: Invalid allocated block checksum. Cannot free !\n");
+		printf("Error: Invalid allocated block checksum %d, %d. Cannot free !\n", allocated->checksum, allocated_memory_block_checksum(allocated));
 		return;
 	}
 	unsigned int size = allocated->size;
 
 	/* On ajoute un bloc libre si on a la place */
-	if (size + sizeof(allocated_memory_block) - sizeof(free_memory_block) > 0) {
+	if (size + sizeof(allocated_memory_block) > sizeof(free_memory_block) + 4) {
 		free_memory_block * newBlock = (free_memory_block *) allocated;
-		newBlock->size = size + sizeof(allocated_memory_block);
+		newBlock->size = size + sizeof(allocated_memory_block) + 4;
 		add_free_block(newBlock);
 	}
 }
