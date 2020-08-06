@@ -26,6 +26,9 @@ FILE_PATH* copy_file_path(FILE_PATH* path) {
 		cur_path = new_path_tmp;
 		path = path->next;
 	}
+	if (cur_path->next != 0) {
+		cur_path->next = 0;
+	}
 
 	return first;
 }
