@@ -143,7 +143,7 @@ void* malloc(unsigned int size) {
 		On teste si dans le nouvel espace restant, il est possible de mettre le header au complet pour ne pas empieter sur d'autres zones mémoires
 		On perd quelques octets si jamais la condition n'est pas remplie
 		*/
-		if (free_use_size > sizeof(free_memory_block) + size) {
+		if (free_use_size - size - sizeof(allocated_memory_block) > sizeof(free_memory_block)) {
 			/* On crée un nouveau bloc libre avec l'espace restant */
 			free_memory_block * newBlock = (free_memory_block*) ((char*) free_use + size + sizeof(allocated_memory_block));
 			newBlock->size = free_use_size - size - sizeof(allocated_memory_block);
@@ -172,9 +172,9 @@ void free(void* ptr) {
 	unsigned int size = allocated->size;
 
 	/* On ajoute un bloc libre si on a la place */
-	if (size + sizeof(allocated_memory_block) > sizeof(free_memory_block) + 4) {
+	if (size + sizeof(allocated_memory_block) > sizeof(free_memory_block)) {
 		free_memory_block * newBlock = (free_memory_block *) allocated;
-		newBlock->size = size + sizeof(allocated_memory_block) + 4;
+		newBlock->size = size + sizeof(allocated_memory_block);
 		add_free_block(newBlock);
 	}
 }
