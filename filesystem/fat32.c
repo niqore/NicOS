@@ -227,3 +227,20 @@ FILE_ENTRY* get_file_entry(FILE_PATH* path) {
 	}
 	return ret;
 }
+
+unsigned char* read_fat32_file(FILE_ENTRY* file) {
+	if (file->file_size == 0) return 0;
+	uint16_t* ptr = (uint16_t*) malloc(((file->file_size / 512) + 1) * 512); // On arrondi au-dessus car en ahci on ne peut lire que 512 octets à la fois minimum
+	uint16_t* ptrPos = ptr;
+	uint32_t cur_sector = file->cluster_low_bytes;
+	while (cur_sector < 0xffffef) {
+		int res = ahci_read(0, get_sector_shifted(cur_sector), 0, 1, ptrPos);
+		if (!res) {
+			printf("Error while reading disk. Halting...");
+			__asm__ __volatile__("hlt");
+		}
+		ptrPos += 256; // 512 octets vu que c'est du uint16_t
+		cur_sector = get_next_sector(cur_sector);
+	}
+	return (unsigned char*) ptr;
+}

@@ -6,6 +6,7 @@
 #include "../drivers/pci.h"
 #include "../filesystem/filesystem.h"
 #include "../filesystem/fat32.h"
+#include "../filesystem/elf.h"
 
 char buffer[512];
 int buffer_pos = 0;
@@ -148,7 +149,17 @@ void execute_buffer() {
 				printf("Ceci n'est pas un fichier\n");
 			}
 			else {
-				//Read ELF
+				unsigned char* file_content = read_fat32_file(cmd_file_entry);
+				if (file_content != 0) {
+					int res = execute_elf(file_content);
+					if (res == 1) {
+						printf("Ceci n'est pas un fichier ELF\n");
+					}
+				}
+				else {
+					printf("Une erreur est survenue lors de l'exécution de la commande\n");
+				}
+				free(file_content);
 			}
 			if (cmd_path)
 				free_path(cmd_path);
