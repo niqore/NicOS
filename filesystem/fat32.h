@@ -120,4 +120,6 @@ void init_fat32_filesystem();
 
 FILE_ENTRY* get_file_entry(FILE_PATH* path);
 
+unsigned char* read_fat32_file(FILE_ENTRY* file);
+
 #endif
