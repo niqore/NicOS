@@ -11,6 +11,7 @@
 char buffer[512];
 int buffer_pos = 0;
 FILE_PATH* current_directory = 0;
+FILE_PATH* bin_directory = 0;
 
 /* Touches spéciales */
 int multi_key_down = 0;
@@ -143,22 +144,37 @@ void execute_buffer() {
 			FILE_PATH* cmd_path = buffer[0] == '/' ? filename_to_path(buffer, 0) : filename_to_path(buffer, current_directory);
 			FILE_ENTRY* cmd_file_entry = get_file_entry(cmd_path);
 			if (!cmd_file_entry) {
-				printf("Commande inconnue\n");
+				if (buffer[0] != '/') {
+					free(cmd_path);
+					free(cmd_file_entry);
+					if (!bin_directory) {
+						bin_directory = filename_to_path("bin", 0);
+					}
+					if (bin_directory) {
+						cmd_path = filename_to_path(buffer, bin_directory);
+						cmd_file_entry = get_file_entry(cmd_path);
+					}
+				}
+				if (!cmd_file_entry) {
+					printf("Commande inconnue\n");
+				}
 			}
-			else if (cmd_file_entry->attribute & FAT32_ATTR_SUBDIR || cmd_file_entry->file_size == 0) {
-				printf("Ceci n'est pas un fichier\n");
-			}
-			else {
-				unsigned char* file_content = read_fat32_file(cmd_file_entry);
-				if (file_content != 0) {
-					char * wd = path_to_string(current_directory);
-					execute_elf(wd, file_content, argc, argv);
-					free(wd);
+			if (cmd_file_entry) {
+				if (cmd_file_entry->attribute & FAT32_ATTR_SUBDIR || cmd_file_entry->file_size == 0) {
+					printf("Ceci n'est pas un fichier\n");
 				}
 				else {
-					printf("Une erreur est survenue lors de l'exécution de la commande\n");
+					unsigned char* file_content = read_fat32_file(cmd_file_entry);
+					if (file_content != 0) {
+						char * wd = path_to_string(current_directory);
+						execute_elf(wd, file_content, argc, argv);
+						free(wd);
+					}
+					else {
+						printf("Une erreur est survenue lors de l'exécution de la commande\n");
+					}
+					free(file_content);
 				}
-				free(file_content);
 			}
 			if (cmd_path)
 				free_path(cmd_path);

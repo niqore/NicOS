@@ -122,4 +122,8 @@ FILE_ENTRY* get_file_entry(FILE_PATH* path);
 
 unsigned char* read_fat32_file(FILE_ENTRY* file);
 
+FILE_ENTRY* get_dir_entries(int sector);
+
+uint32_t get_next_sector(int sector);
+
 #endif

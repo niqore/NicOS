@@ -33,6 +33,9 @@ void printf(const char *format, ...) {
 
           switch (c)
             {
+            case 'c':
+              print_char(*((char *) arg++));
+              break;
             case 'd':
             case 'u':
             case 'x':
