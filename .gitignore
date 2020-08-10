@@ -1,6 +1,7 @@
-!bin/.gitkeep
 **/*.o
 **/*.bin
 **/*.elf
 **/.directory
 OS.img
+cmds/bin/*
+!**/.gitkeep

@@ -15,4 +15,6 @@ FILE_PATH* combine_paths(FILE_PATH* path1, FILE_PATH* path2);
 
 void free_path(FILE_PATH* path);
 
+char* path_to_string(FILE_PATH* path);
+
 #endif
