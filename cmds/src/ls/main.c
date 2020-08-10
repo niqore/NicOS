@@ -1,8 +1,6 @@
 #include "libc.h" 
 
 int main(int argc, char** argv, char* work_dir, LIBC* libc) {
-	argc = argc;
-	argv = argv;
 
 	FILE_PATH* path; 
 	if (argc == 1) {
@@ -92,6 +90,8 @@ int main(int argc, char** argv, char* work_dir, LIBC* libc) {
 		cur_sector = libc->get_next_sector(cur_sector);
 	}
 	libc->printf("\n");
+
+	libc->free(file_entry);
 
 	return 0;
 }
