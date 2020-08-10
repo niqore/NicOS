@@ -151,10 +151,9 @@ void execute_buffer() {
 			else {
 				unsigned char* file_content = read_fat32_file(cmd_file_entry);
 				if (file_content != 0) {
-					int res = execute_elf(file_content);
-					if (res == 1) {
-						printf("Ceci n'est pas un fichier ELF\n");
-					}
+					char * wd = path_to_string(current_directory);
+					execute_elf(wd, file_content, argc, argv);
+					free(wd);
 				}
 				else {
 					printf("Une erreur est survenue lors de l'exécution de la commande\n");

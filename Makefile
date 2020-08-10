@@ -1,5 +1,5 @@
-C_SOURCES_32 = $(shell find . -name "*.c")
-HEADERS = $(shell find . -name "*.h")
+C_SOURCES_32 = $(shell find . -name "*.c" ! -path "./cmds/*")
+HEADERS = $(shell find . -name "*.h" ! -path "./cmds/*")
 OBJ = $(C_SOURCES_32:.c=.o cpu/interrupts/interrupt.o kernel/gdt.o kernel/multiboot2.o) $(C_SOURCES_16:.c16=.o)
 
 CC = gcc
@@ -16,12 +16,17 @@ nicos.bin: $(OBJ)
 nicos.elf: $(OBJ)
 	$(LD) -m elf_i386 -o $@ -T script.ld $^
 
-run: nicos.bin
-	mcopy -i $(OS_IMG) -no nicos.bin ::/boot &
+commands:
+	cd cmds && make all && cd ..
+
+run: nicos.bin commands
+	mcopy -i $(OS_IMG) -no nicos.bin ::/boot
+	mcopy -i $(OS_IMG) -no cmds/bin ::/
 	qemu-system-i386 -m 1G -drive id=disk,file=$(OS_IMG),if=none -device ahci,id=ahci -device ide-drive,drive=disk,bus=ahci.0
 
-debug: nicos.bin nicos.elf
-	mcopy -i $(OS_IMG) -no nicos.bin ::/boot &
+debug: nicos.bin nicos.elf commands
+	mcopy -i $(OS_IMG) -no nicos.bin ::/boot
+	mcopy -i $(OS_IMG) -no cmds/bin ::/
 	qemu-system-i386 -m 1G -s -S -drive id=disk,file=$(OS_IMG),if=none -device ahci,id=ahci -device ide-drive,drive=disk,bus=ahci.0 &
 	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file nicos.elf"
 
@@ -37,3 +42,4 @@ debug: nicos.bin nicos.elf
 clean:
 	rm -rf *.bin *.dis *.o os-image.bin *.elf
 	rm -rf kernel/*.o kernel/*.bin drivers/*.o boot/*.o cpu/*.o cpu/interrupts/*.o libc/*.o
+	cd cmds && make clean && cd ..

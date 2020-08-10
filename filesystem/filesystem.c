@@ -100,6 +100,41 @@ FILE_PATH* combine_paths(FILE_PATH* path1, FILE_PATH* path2) {
 	return path1;
 }
 
+char* path_to_string(FILE_PATH* path) {
+
+	if (path == 0) {
+		char* root = (char*) malloc(2);
+		root[0] = '/';
+		root[1] = 0;
+		return root;
+	}
+
+	FILE_PATH* tmp = path;
+	int length = 0;
+	int count = 0;
+	while (tmp != 0) {
+		length += strlen(tmp->name);
+		count++;
+		tmp = tmp->next;
+	}
+
+	char* str = (char*) malloc(sizeof(char)*(length + count + 2));
+
+	str[0] = '/';
+	int pos = 1;
+	tmp = path;
+	while (tmp != 0) {
+		int strl = strlen(tmp->name);
+		memcpy(str + pos, tmp->name, strl);
+		pos += strl;
+		str[pos] = '/';
+		pos++;
+		tmp = tmp->next;
+	}
+	str[pos] = 0;
+	return str;
+}
+
 void free_path(FILE_PATH* path) {
 	if (path == 0) return;
 	FILE_PATH* next = path;
