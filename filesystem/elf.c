@@ -12,7 +12,20 @@ int is_elf(unsigned char* magic) {
 
 void init_libc() {
 	libc = (LIBC*) malloc(sizeof(LIBC));
+
 	libc->printf = &printf;
+
+	libc->filename_to_path = &filename_to_path;
+	libc->get_file_entry = &get_file_entry;
+	libc->get_dir_entries = &get_dir_entries;
+	libc->get_next_sector = &get_next_sector;
+	libc->combine_paths = &combine_paths;
+	libc->free_path = &free_path;
+
+	libc->malloc = &malloc;
+	libc->free = &free;
+
+	libc->lower_case = &lower_case;
 }
 
 void execute_elf(char* work_dir, unsigned char* file_content, int argc, char** argv) {
@@ -50,22 +63,6 @@ void execute_elf(char* work_dir, unsigned char* file_content, int argc, char** a
 	}
 
 	unsigned char* main_addr = file_content + header->pgrm_entry_pos;
-	
-	//ELF_PHT_ENTRY* pht_entries = (ELF_PHT_ENTRY*) (file_content + header->pht_pos);
-	//ELF_SHT_ENTRY* sht_entries = (ELF_SHT_ENTRY*) (file_content + header->sht_pos);
-	/*uint32_t shstrtab_offset = sht_entries[header->sht_name_index].offset;
-	for (int i = 0; i < header->sht_entry_count; ++i) {
-		if (strcmp((char*) (file_content + shstrtab_offset + sht_entries[i].name), ".text") == 0) {
-			main_addr = file_content + header->pgrm_entry_pos - sht_entries[i].vaddr + sht_entries[i].offset;
-		}
-		if (sht_entries[i].type != SHT_NULL) {
-			sht_entries[i].vaddr = (uint32_t) file_content + sht_entries[i].offset; // TODO Align
-		}
-	}
-	for (int i = 0; i < header->pht_entry_count; ++i) {
-		pht_entries[i].vaddr = (uint32_t) file_content + pht_entries[i].offset; // TODO Align
-		pht_entries[i].paddr = pht_entries[i].vaddr;
-	}*/
 
 	if (!main_addr) {
 		printf("La fonction main n'a pas été trouvée\n");
