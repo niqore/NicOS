@@ -21,6 +21,7 @@ void init_libc() {
 	libc->get_next_sector = &get_next_sector;
 	libc->combine_paths = &combine_paths;
 	libc->free_path = &free_path;
+	libc->read_fat32_file = &read_fat32_file;
 
 	libc->malloc = &malloc;
 	libc->free = &free;

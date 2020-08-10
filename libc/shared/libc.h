@@ -14,6 +14,7 @@ typedef struct _libc {
 	uint32_t (*get_next_sector)(int sector);
 	FILE_PATH* (*combine_paths)(FILE_PATH* path1, FILE_PATH* path2);
 	void (*free_path)(FILE_PATH* path);
+	unsigned char* (*read_fat32_file)(FILE_ENTRY* file);
 
 	void* (*malloc)(unsigned int size);
 	void (*free)(void* ptr);
