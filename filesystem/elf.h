@@ -3,8 +3,6 @@
 
 #include "../cpu/types.h"
 
-void execute_elf(char* wd, unsigned char* file_content, int argc, char** argv);
-
 typedef struct _elf_header {
 
 	unsigned char magic_number[4];
@@ -57,6 +55,15 @@ typedef struct _elf_sht_entry {
 
 }__attribute__((packed)) ELF_SHT_ENTRY;
 
+typedef struct _queued_elf {
+
+	char* wd;
+	unsigned char* file_content;
+	int argc;
+	char** argv;
+
+} QUEUED_ELF;
+
 #define PT_NULL 0x00
 #define PT_LOAD 0x01
 #define PT_DYNAMIC 0x02
@@ -95,5 +102,11 @@ typedef struct _elf_sht_entry {
 #define SHF_OS_NONCONFORMING 0x100
 #define SHF_GROUP 0x200
 #define SHF_TLS 0x400
+
+void execute_elf(char* wd, unsigned char* file_content, int argc, char** argv);
+
+void add_elf_to_queue(QUEUED_ELF* queued);
+
+int execute_elf_queue();
 
 #endif

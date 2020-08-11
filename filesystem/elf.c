@@ -3,8 +3,13 @@
 #include "../libc/stdlib.h"
 #include "../libc/string.h"
 #include "../libc/shared/libc.h"
+#include "../kernel/cli.h"
+#include "../drivers/screen.h"
+#include "../libc/random.h"
+#include "../cpu/timer.h"
 
 LIBC* libc = 0;
+QUEUED_ELF* elf_queue = 0;
 
 int is_elf(unsigned char* magic) {
 	return magic[0] == 0x7f && magic[1] == 'E' && magic[2] == 'L' && magic[3] == 'F';
@@ -27,6 +32,19 @@ void init_libc() {
 	libc->free = &free;
 
 	libc->lower_case = &lower_case;
+
+	libc->get_last_key = &get_last_key;
+	libc->reset_last_key = &reset_last_key;
+
+	libc->print_char_at = &print_char_at;
+	libc->clear_screen = &clear_screen;
+
+	libc->rand = &rand;
+	libc->srand = &srand;
+	libc->random_seed = &random_seed;
+	libc->randint = &randint;
+
+	libc->sleep = &sleep;
 }
 
 void execute_elf(char* work_dir, unsigned char* file_content, int argc, char** argv) {
@@ -83,4 +101,29 @@ void execute_elf(char* work_dir, unsigned char* file_content, int argc, char** a
 	}
 
 	return;
+}
+
+int execute_elf_queue() {
+	if (elf_queue != 0) {
+		srand(random_seed());
+		set_in_elf(1);
+		execute_elf(elf_queue->wd, elf_queue->file_content, elf_queue->argc, elf_queue->argv);
+		set_in_elf(0);
+		free(elf_queue->wd);
+		free(elf_queue->file_content);
+		for (int i = 0; i < elf_queue->argc; ++i) {
+			free(elf_queue->argv[i]);
+		}
+		if (elf_queue->argv != 0) {
+			free(elf_queue->argv);
+		}
+		free(elf_queue);
+		elf_queue = 0;
+		return 1;
+	}
+	return 0;
+}
+
+void add_elf_to_queue(QUEUED_ELF* queued) {
+	elf_queue = queued;
 }

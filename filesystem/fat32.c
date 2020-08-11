@@ -200,7 +200,7 @@ FILE_ENTRY* get_file_entry(FILE_PATH* path) {
 				break;
 			}
 			FILE_ENTRY* tmp_dir = dir;
-			curr_sector = dir[i].cluster_low_bytes;
+			curr_sector = ((uint32_t) dir[i].cluster_high_bytes << 16) + dir[i].cluster_low_bytes;
 			dir = get_dir_entries(curr_sector);
 			free(tmp_dir);
 			cur_path = cur_path->next;
@@ -232,7 +232,7 @@ unsigned char* read_fat32_file(FILE_ENTRY* file) {
 	if (file->file_size == 0) return 0;
 	uint16_t* ptr = (uint16_t*) malloc(((file->file_size / 512) + 1) * 512); // On arrondi au-dessus car en ahci on ne peut lire que 512 octets à la fois minimum
 	uint16_t* ptrPos = ptr;
-	uint32_t cur_sector = file->cluster_low_bytes;
+	uint32_t cur_sector = ((uint32_t) file->cluster_high_bytes << 16) + file->cluster_low_bytes;
 	while (cur_sector < 0xffffef) {
 		int res = ahci_read(0, get_sector_shifted(cur_sector), 0, 1, ptrPos);
 		if (!res) {
