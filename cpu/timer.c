@@ -6,6 +6,10 @@
 
 uint32_t tick = 0;
 
+uint32_t get_current_tick() {
+    return tick;
+}
+
 static void timer_callback(registers_t regs) {
 
     regs = regs;

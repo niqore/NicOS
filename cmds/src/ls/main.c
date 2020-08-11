@@ -27,7 +27,7 @@ int main(int argc, char** argv, char* work_dir, LIBC* libc) {
 		return 0;
 	}
 
-	uint32_t cur_sector = file_entry->cluster_low_bytes;
+	uint32_t cur_sector = ((uint32_t) file_entry->cluster_high_bytes << 16) + file_entry->cluster_low_bytes;
 	while (cur_sector < 0xffffef) {
 		libc->free(file_entry);
 		file_entry = libc->get_dir_entries(cur_sector);

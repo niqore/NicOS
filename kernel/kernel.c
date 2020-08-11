@@ -10,6 +10,8 @@
 #include "../drivers/ahci.h"
 #include "../filesystem/fat32.h"
 #include "../filesystem/filesystem.h"
+#include "../libc/random.h"
+#include "../filesystem/elf.h"
 
 void main() {
 
@@ -86,12 +88,12 @@ void main() {
 	/* Filesystem initialization */
 	init_fat32_filesystem();
 
-	/* Test malloc free */
-	free(malloc(2));
-	free(malloc(3));
-
 	/* Command Line Interface */
 	init_cli();
 
-	while (1);
+	while (1) {
+		if(execute_elf_queue()) {
+			init_cli();
+		}
+	}
 }

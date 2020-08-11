@@ -20,6 +20,19 @@ typedef struct _libc {
 	void (*free)(void* ptr);
 
 	char (*lower_case)(char c);
+
+	uint8_t (*get_last_key)();
+	void (*reset_last_key)();
+
+	int (*print_char_at)(char c, int col, int row, char attribute);
+	void (*clear_screen)();
+
+	uint32_t (*rand)(void);
+	void (*srand)(uint32_t seed);
+	uint32_t (*random_seed)();
+	uint32_t (*randint)(uint32_t min, uint32_t max);
+
+	void (*sleep)(uint32_t ms);
 } LIBC;
 
 #endif

@@ -7,11 +7,15 @@
 #include "../filesystem/filesystem.h"
 #include "../filesystem/fat32.h"
 #include "../filesystem/elf.h"
+#include "../libc/random.h"
+#include "../cpu/timer.h"
 
 char buffer[512];
 int buffer_pos = 0;
 FILE_PATH* current_directory = 0;
 FILE_PATH* bin_directory = 0;
+int in_elf = 0;
+uint8_t last_key = 0;
 
 /* Touches spéciales */
 int multi_key_down = 0;
@@ -167,8 +171,17 @@ void execute_buffer() {
 					unsigned char* file_content = read_fat32_file(cmd_file_entry);
 					if (file_content != 0) {
 						char * wd = path_to_string(current_directory);
-						execute_elf(wd, file_content, argc, argv);
-						free(wd);
+						QUEUED_ELF* queued = (QUEUED_ELF*) malloc(sizeof(QUEUED_ELF));
+						queued->wd = wd;
+						queued->file_content = file_content;
+						queued->argc = argc;
+						queued->argv = argv;
+						add_elf_to_queue(queued);
+						if (cmd_path)
+							free_path(cmd_path);
+						if (cmd_file_entry)
+							free(cmd_file_entry);
+						return;
 					}
 					else {
 						printf("Une erreur est survenue lors de l'exécution de la commande\n");
@@ -183,6 +196,9 @@ void execute_buffer() {
 		}
 		for (int i = 0; i < argc; ++i) {
 			free(argv[i]);
+		}
+		if (argv != 0) {
+			free(argv);
 		}
 	}
 
@@ -208,7 +224,22 @@ void handle_backspace() {
 	remove_last_character();
 }
 
+uint8_t get_last_key() {
+	return last_key;
+}
+
+void reset_last_key() {
+	last_key = 0;
+}
+
+void set_in_elf(int in) {
+	in_elf = in;
+}
+
 void handle_key(uint8_t scancode) {
+	last_key = scancode;
+	if (in_elf)
+		return;
 	switch (scancode) {
 		case 0x1: //Escape
 			break;
