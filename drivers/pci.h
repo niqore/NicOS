@@ -209,6 +209,10 @@ void print_pci_devices_info();
 
 type00_pci_device_header_t* get_ahci_disk();
 
+generic_pci_device_header_t* get_device_list();
+
+int get_device_count();
+
 generic_pci_device_header_t* device_list;
 int device_count;
 
