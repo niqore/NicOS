@@ -45,6 +45,9 @@ void init_libc() {
 	libc->randint = &randint;
 
 	libc->sleep = &sleep;
+
+	libc->get_device_list = &get_device_list;
+	libc->get_device_count = &get_device_count;
 }
 
 void execute_elf(char* work_dir, unsigned char* file_content, int argc, char** argv) {

@@ -4,6 +4,7 @@
 #include "../../filesystem/filesystem.h"
 #include "../../filesystem/fat32.h"
 #include "../../cpu/types.h"
+#include "../../drivers/pci.h"
 
 typedef struct _libc {
 	void (*printf)(const char *format, ...);
@@ -33,6 +34,9 @@ typedef struct _libc {
 	uint32_t (*randint)(uint32_t min, uint32_t max);
 
 	void (*sleep)(uint32_t ms);
+
+	generic_pci_device_header_t* (*get_device_list)();
+	int (*get_device_count)();
 } LIBC;
 
 #endif
