@@ -5,6 +5,7 @@
 #include "../../filesystem/fat32.h"
 #include "../../cpu/types.h"
 #include "../../drivers/pci.h"
+#include "../mem.h"
 
 typedef struct _libc {
 	void (*printf)(const char *format, ...);
@@ -20,7 +21,13 @@ typedef struct _libc {
 	void* (*malloc)(unsigned int size);
 	void (*free)(void* ptr);
 
+	void (*strrev)(unsigned char *str);
+	char* (*itoa)(int value, char* buffer, int base);
+	int (*strlen)(const char *str);
 	char (*lower_case)(char c);
+	char (*upper_case)(char c);
+	int (*strcmp)(const char *p1, const char *p2);
+	char* (*format_number_decimals)(char *s, int decimals);
 
 	uint8_t (*get_last_key)();
 	void (*reset_last_key)();
@@ -37,6 +44,9 @@ typedef struct _libc {
 
 	generic_pci_device_header_t* (*get_device_list)();
 	int (*get_device_count)();
+
+	multiboot_memory_map_t* (*get_memory_map)();
+	int (*get_memory_map_size)();
 } LIBC;
 
 #endif

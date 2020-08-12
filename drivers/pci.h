@@ -205,8 +205,6 @@ typedef struct type02_pci_device_header {
 
 void scan_and_register_pci_devices();
 
-void print_pci_devices_info();
-
 type00_pci_device_header_t* get_ahci_disk();
 
 generic_pci_device_header_t* get_device_list();
