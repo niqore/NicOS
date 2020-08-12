@@ -19,8 +19,7 @@ struct _free_memory_block {
 	unsigned int checksum;
 }__attribute__((packed));
 
-free_memory_block * free_list;
-multiboot_memory_map_t * memory_map;
-int mmap_size = 0;
+multiboot_memory_map_t* get_memory_map();
+int get_memory_map_size();
 
 #endif

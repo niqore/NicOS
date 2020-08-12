@@ -5,6 +5,10 @@
 #include "stdio.h"
 #include "../cpu/types.h"
 
+free_memory_block * free_list;
+multiboot_memory_map_t * memory_map;
+int mmap_size = 0;
+
 void * memcpy(void *dest, const void *src, int len) {
 
 	char *d = dest;
@@ -208,29 +212,10 @@ void * realloc(void * ptr, unsigned int size) {
 	return newPtr;
 }
 
-void print_ram_info() {
+multiboot_memory_map_t* get_memory_map() {
+	return memory_map;
+}
 
-	char itoa_buffer[16];
-	unsigned int amount = 0;
-
-	for (int i = 0; i < mmap_size; ++i) {
-		multiboot_memory_map_t m = memory_map[i];
-		amount += m.len;
-		printf("0x");
-		printf(format_number_decimals(itoa(m.addr, itoa_buffer, 16), 8));
-		printf(" -> 0x");
-		printf(format_number_decimals(itoa(m.addr + m.len, itoa_buffer, 16), 8));
-		printf("; Type = %x", m.type);
-		if (m.type == 1) {
-			printf(" (Usable)");
-		}
-		else if (m.type == 2) {
-			printf(" (Reserved)");
-		}
-		else {
-			printf(" (Undefined)");
-		}
-		printf("\n");
-	}
-	printf("Total size: %d MB (%d B)\n", amount / 1000000, amount);
+int get_memory_map_size() {
+	return mmap_size;
 }

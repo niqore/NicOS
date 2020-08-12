@@ -31,7 +31,13 @@ void init_libc() {
 	libc->malloc = &malloc;
 	libc->free = &free;
 
+	libc->strrev = &strrev;
+	libc->itoa = &itoa;
+	libc->strlen = &strlen;
 	libc->lower_case = &lower_case;
+	libc->upper_case = &upper_case;
+	libc->strcmp = &strcmp;
+	libc->format_number_decimals = &format_number_decimals;
 
 	libc->get_last_key = &get_last_key;
 	libc->reset_last_key = &reset_last_key;
@@ -48,6 +54,9 @@ void init_libc() {
 
 	libc->get_device_list = &get_device_list;
 	libc->get_device_count = &get_device_count;
+
+	libc->get_memory_map = &get_memory_map;
+	libc->get_memory_map_size = &get_memory_map_size;
 }
 
 void execute_elf(char* work_dir, unsigned char* file_content, int argc, char** argv) {

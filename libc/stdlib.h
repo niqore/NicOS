@@ -17,6 +17,4 @@ void * calloc(unsigned int size);
 
 void * realloc(void * ptr, unsigned int size);
 
-void print_ram_info();
-
 #endif
