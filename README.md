@@ -64,5 +64,5 @@ Il faut avoir installé [QEMU](https://www.qemu.org/)
 
 Ensuite il faut exécuter la commande suivante avec le fichier OS.img dans le dossier courant:
 ```
-qemu-system-i386 -m 1G -s -S -drive id=disk,file=OS.img,if=none -device ahci,id=ahci -device ide-drive,drive=disk,bus=ahci.0
+qemu-system-i386 -m 1G -drive id=disk,format=raw,file=OS.img,if=none -device ahci,id=ahci -device ide-drive,drive=disk,bus=ahci.0
 ```
