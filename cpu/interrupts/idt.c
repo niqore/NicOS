@@ -20,7 +20,7 @@ void set_idt_gate(int n, uint32_t handler) {
     idt[n].low_offset = low_16(handler); // Les 16 bits de poids faible de l'adresse d'appel du handler
     idt[n].sel = KERNEL_CS; // Selecteur du kernel
     idt[n].always0 = 0; // Inutilisé, doit être à 0
-    idt[n].flags = 0x8E; // Flags (voir README.md)
+    idt[n].flags = 0x8E; // Flags
     idt[n].high_offset = high_16(handler); // 16 bits de poids fort
 }
 
