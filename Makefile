@@ -20,15 +20,23 @@ commands:
 	cd cmds && make all && cd ..
 
 run: nicos.bin commands
+ifeq ("$(wildcard $(OS_IMG))","")
+	echo "Disc image $(OS_IMG) doesn't exist. Check README.md in order to create it"
+else
 	mcopy -i $(OS_IMG) -no nicos.bin ::/boot
 	mcopy -i $(OS_IMG) -no cmds/bin ::/
 	qemu-system-i386 -m 1G -drive id=disk,file=$(OS_IMG),if=none -device ahci,id=ahci -device ide-drive,drive=disk,bus=ahci.0
+endif
 
 debug: nicos.bin nicos.elf commands
+ifeq ("$(wildcard $(OS_IMG))","")
+	echo "Disc image $(OS_IMG) doesn't exist. Check README.md in order to create it"
+else
 	mcopy -i $(OS_IMG) -no nicos.bin ::/boot
 	mcopy -i $(OS_IMG) -no cmds/bin ::/
 	qemu-system-i386 -m 1G -s -S -drive id=disk,file=$(OS_IMG),if=none -device ahci,id=ahci -device ide-drive,drive=disk,bus=ahci.0 &
 	$(GDB) -ex "target remote localhost:1234" -ex "symbol-file nicos.elf"
+endif
 
 %.o: %.c $(HEADERS)
 	$(CC) $(CFLAGS) -m32 -c $< -o $@
@@ -43,3 +51,6 @@ clean:
 	rm -rf *.bin *.dis *.o os-image.bin *.elf
 	rm -rf kernel/*.o kernel/*.bin drivers/*.o boot/*.o cpu/*.o cpu/interrupts/*.o libc/*.o
 	cd cmds && make clean && cd ..
+
+clean-image:
+	rm $(OS_IMG)
