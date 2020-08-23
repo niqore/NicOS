@@ -21,12 +21,14 @@ make
 
 ### Création de l'image disque
 
-Il faut créer une image vierge avec la commande suivante. count peut-être changé avec la valeur en octets voulue
+Dans les commandes suivantes, le mode *sudo* peut être nécessaire.
+
+Il faut d'abord créer une image vierge avec la commande suivante. count peut-être changé avec la valeur en octets voulue
 ```
 dd if=/dev/zero of=OS.img bs=1k count=100000
 ```
 
-Il faut ensuite format l'image en vFAT
+Il faut ensuite formatter l'image en vFAT
 ```
 /usr/sbin/mkfs.vfat -F 32 OS.img
 ```
@@ -58,7 +60,9 @@ mcopy -i OS.img -no cmds/bin ::/
 
 ## Lancement du système d'exploitation avec QEMU
 
-Avec le fichier OS.img dans le dossier courant:
+Il faut avoir installé [QEMU](https://www.qemu.org/)
+
+Ensuite il faut exécuter la commande suivante avec le fichier OS.img dans le dossier courant:
 ```
 qemu-system-i386 -m 1G -s -S -drive id=disk,file=OS.img,if=none -device ahci,id=ahci -device ide-drive,drive=disk,bus=ahci.0
 ```
