@@ -206,6 +206,14 @@ FILE_ENTRY* get_file_entry(FILE_PATH* path) {
 					if (j != name_length - (extension_length != 0 ? extension_length + 1 : 0)) {
 						continue;
 					}
+					for (j = name_length - (extension_length != 0 ? extension_length + 1 : 0); j < 8; ++j) {
+						if (dir[i].short_name[j] != ' ') {
+							break;
+						}
+					}
+					if (j != 8) {
+						continue;
+					}
 					break; // Le nom dans l'entrée est validé
 				}
 			}
