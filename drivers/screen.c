@@ -57,30 +57,6 @@ int print_char_at(char c, int col, int row, char attribute) {
     return offset;
 }
 
-/*void print_string_at(char * str, int col, int row, char attribute) {
-
-    int offset;
-
-    if (col >= 0 && row >= 0)
-        offset = get_offset(col, row);
-    else {
-        offset = get_cursor_offset();
-        row = get_offset_row(offset);
-        col = get_offset_col(offset);
-    }
-
-    int i = 0;
-    while (str[i] != 0) {
-        offset = print_char_at(str[i++], col, row, attribute);
-        row = get_offset_row(offset);
-        col = get_offset_col(offset);
-	}
-}
-
-void print_string(char * str) {
-	print_string_at(str, -1, -1, 0);
-}*/
-
 void print_char(char c) {
     print_char_at(c, -1, -1, 0);
 }

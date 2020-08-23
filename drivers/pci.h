@@ -105,7 +105,7 @@ typedef struct type00_pci_device_header {
 	uint16_t subsystem_vendor_id;
 	uint16_t subsystem_id;
 	uint32_t expansion_rom_base_addr;
-	uint8_t capabilities_pointer; /* oints (i.e. an offset into this function's configuration space) to a linked list of new capabilities implemented by the device. Used if bit 4 of the status register (Capabilities List bit) is set to 1. The bottom two bits are reserved and should be masked before the Pointer is used to access the Configuration Space. */
+	uint8_t capabilities_pointer; /* Points (i.e. an offset into this function's configuration space) to a linked list of new capabilities implemented by the device. Used if bit 4 of the status register (Capabilities List bit) is set to 1. The bottom two bits are reserved and should be masked before the Pointer is used to access the Configuration Space. */
 	uint8_t reserved2;
 	uint16_t reserved1;
 	uint32_t reserved3;
